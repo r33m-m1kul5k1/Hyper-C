@@ -12,7 +12,7 @@ a hypervisor type 1.5 influenced by kvm.
 - [ ] guest scheduling
 - [ ] APIC virtualization
 
-## Resouces
+## Resources
 
 [intel's developer manual](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)
 
