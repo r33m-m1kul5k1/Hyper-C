@@ -1,4 +1,4 @@
-# VBS & Cred Guard
+# Native Hypervisor & VBS
 
 a native hypervisor with the option to manage credentials.
 
