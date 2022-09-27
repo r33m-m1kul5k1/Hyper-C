@@ -1,6 +1,6 @@
-# kvm
+# VBS & Cred Guard
 
-a hypervisor type 1.5 influenced by kvm.
+a native hypervisor with the option to manage credentials.
 
 ## Build & Run
 
@@ -9,8 +9,9 @@ a hypervisor type 1.5 influenced by kvm.
 ## Features
 
 - [ ] Extended Page Table management
-- [ ] guest scheduling
-- [ ] APIC virtualization
+- [ ] Bootloader & creating the disk image
+- [ ] VMCS configuration
+- [ ] Credential Guard
 
 ## Resources
 
@@ -20,9 +21,11 @@ Tutorials
 
 - [hypervisor from scratch (windows)](https://rayanfam.com/topics/hypervisor-from-scratch-part-1/)
 - [hypervisor from scratch (linux)](https://nixhacker.com/developing-hypervisior-from-scratch-part-1/)
+- native hypervisor from scratch [part 1](https://www.digitalwhisper.co.il/files/Zines/0x7C/DW124-1-NativeHyperVisoer.pdf) & [part 2](https://www.digitalwhisper.co.il/files/Zines/0x7D/DW125-1-NativeHyperVisoer-Part2.pdf)
 
 Projects
 
 - [kvm](https://elixir.bootlin.com/linux/latest/source/arch/x86/kvm)
+- [SimpleVisor](https://github.com/ionescu007/SimpleVisor)
 
 for more resources [click me](https://github.com/Wenzel/awesome-virtualization)

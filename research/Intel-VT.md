@@ -33,8 +33,6 @@ set -> the MSR cannot be modify and vmx is on.
 
 creates a measured environment on a trust level.
 
-## APIC virtualization & Virtual interrupts
-
 ## EPT - Extended Page Table
 
 ## VPID - virtual processor ID
