@@ -11,7 +11,7 @@ a native hypervisor for [CrabOS](https://github.com/r33m-m1kul5k1/CrabOS) that m
 - [ ] Extended Page Table management
 - [ ] Bootloader & creating the disk image
 - [ ] VMCS configuration
-- [ ] Credential Guard
+
 
 ## Resources
 
