@@ -1,4 +1,4 @@
-# Native Hypervisor & VBS
+# Hyper-C
 
 a native hypervisor with the option to manage credentials.
 
