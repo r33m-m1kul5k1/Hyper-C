@@ -1,6 +1,6 @@
 # Hyper-C
 
-a native hypervisor with the option to manage credentials.
+a native hypervisor for [CrabOS](https://github.com/r33m-m1kul5k1/CrabOS) that manages VTLs.
 
 ## Build & Run
 
