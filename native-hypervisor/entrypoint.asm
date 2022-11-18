@@ -1,18 +1,33 @@
 
+global _start
+
+; double word - 32
+; word - 16
+; byte - 8
+[BITS 32]
 section .text
-    global _start
+
+multiboot2_header_start:
+     
+    dd 0xE85250D6 ; magic
+    dd 0 ; architecture => 32-bit (protected) mode of i386
+    dd (multiboot2_header_end - multiboot2_header_start) ; header_length
+    dd 0x100000000 -(0xE85250D6 + 0 + (multiboot2_header_end - multiboot2_header_start)) ; checksum
+    
+        multiboot2_tag_start:
+        ; this doesn't work
+        dw 3 ; tage type 
+        dw 0 ; and it's flags 
+        dd multiboot2_tag_end - multiboot2_tag_start ; size
+        dd _start ; entry addresss
+        multiboot2_tag_end:
+    
+        ; terminating tag
+        dd 0
+        dd 0
+        dw 8
+multiboot2_header_end:
 
     _start:
-        mov rdi, 0x1
-        mov rsi, hello
-        mov rdx, helloLen
-        mov rax, 0x1
-        syscall
-
-        xor rdi, rdi
-        mov rax, 0x3c
-        syscall
-
-section .data
-    hello db "test makefile", 0xa
-    helloLen equ $-hello
+        mov ax, 42
+        jmp $
