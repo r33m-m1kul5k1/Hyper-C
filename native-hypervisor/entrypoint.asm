@@ -12,7 +12,7 @@ multiboot2_header_start:
     dd 0xE85250D6 ; magic
     dd 0 ; architecture => 32-bit (protected) mode of i386
     dd (multiboot2_header_end - multiboot2_header_start) ; header_length
-    dd 0x100000000 -(0xE85250D6 + 0 + (multiboot2_header_end - multiboot2_header_start)) ; checksum
+    dd -(0xE85250D6 + 0 + (multiboot2_header_end - multiboot2_header_start)) ; checksum
     
         multiboot2_tag_start:
         ; this doesn't work
