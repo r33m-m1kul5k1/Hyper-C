@@ -20,7 +20,7 @@ BUILD_DIR = build
 OUTPUT_DIR = $(BUILD_DIR)/iso/boot
 SRC_DIR = native-hypervisor
 
-OBJECT_FILES = $(BUILD_DIR)/initialize_machine.o $(BUILD_DIR)/entrypoint.o
+OBJECT_FILES = $(BUILD_DIR)/initialize_machine.o $(BUILD_DIR)/entrypoint.o $(BUILD_DIR)/serial_print.o
 
 
 .PHONY : clean
