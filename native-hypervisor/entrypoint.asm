@@ -3,6 +3,7 @@
 ; calls the main c function,
 ; loads the first sector of the OS bootloader
 
+extern initialize_machine
 ; Entry defines
 %define PAGE_PRESENT (1 << 0)
 %define PAGE_WRITE (1 << 1)
@@ -10,11 +11,10 @@
 
 ; Memory defines
 %define MEMORY_SIZE 2
-%define FREE_SPACE 0x11000
+%define FREE_SPACE 0x9000
 %define PML4_ENTRY (FREE_SPACE + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
 %define LARGE_PAGE_SIZE 0x200000
-%define GDT_PTR_LOCATION 0x9000
-%define GDT_LOCATION 0x10000
+
 
 
 
@@ -28,9 +28,6 @@
 
 ; Serial
 %define COM1 0x3F8
-%define COM2 0x2F8
-%define COM3 0x3E8
-%define COM4 0x2E8
 
 
 ; stores a qword in little endian order
@@ -91,7 +88,7 @@ multiboot2_header_end:
         output_serial '1'
 
         
-        mov ecx, MEMORY_SIZE ; each loop allocates 1G **if Page Size is 2M
+        mov ecx, MEMORY_SIZE ; each loop allocates 1G **if Page Size is 212M
         ; initialize pdp table
         lea ebx, [FREE_SPACE + 0x1000] ; pdp pointer
         lea eax, [FREE_SPACE + 0x2000] ; pd pointer
@@ -155,20 +152,26 @@ multiboot2_header_end:
     ; enable paging
     mov eax, cr0
     or eax, PAGING
-    mov cr0, eax ; crushes here
+    mov cr0, eax
     
-
     lgdt [gdt.pointer]
 
     jmp gdt.code:long_mode
 
+
 [BITS 64]
 long_mode:
+    cli
+    mov ax, gdt.data
+    mov ds, ax 
+    mov es, ax 
+    mov ss, ax
 
     output_serial '2'
 
+    call initialize_machine
 
-    jmp $
+    hlt
 
 section .rodata
 gdt:
