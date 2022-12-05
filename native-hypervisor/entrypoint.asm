@@ -3,19 +3,20 @@
 ; calls the main c function,
 ; loads the first sector of the OS bootloader
 
-
-; Memory defines
-%define MEMORY_SIZE 2
-%define FREE_SPACE 0x11000
-%define PML4_ENTRY 0x10003 ; <offset><flags>
-%define LARGE_PAGE_SIZE 0x200000
-%define GDT_PTR_LOCATION 0x9000
-%define GDT_LOCATION 0x10000
-
 ; Entry defines
 %define PAGE_PRESENT (1 << 0)
 %define PAGE_WRITE (1 << 1)
 %define PAGE_SIZE (1 << 7)
+
+; Memory defines
+%define MEMORY_SIZE 2
+%define FREE_SPACE 0x11000
+%define PML4_ENTRY (FREE_SPACE + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
+%define LARGE_PAGE_SIZE 0x200000
+%define GDT_PTR_LOCATION 0x9000
+%define GDT_LOCATION 0x10000
+
+
 
 ; Flags
 %define LONG_MODE (1 << 8)
@@ -80,16 +81,17 @@ multiboot2_header_end:
 
     _start:
         ; disable previous paging
-        mov eax, 0
+        mov eax, cr0
+        and eax, ~PAGING
         mov cr0, eax
 
         ; initialize PML4
         store_qword_little FREE_SPACE, 0x0, PML4_ENTRY
-        
+
         output_serial '1'
 
         
-        mov ecx, MEMORY_SIZE ; each loop allocates 2G **if Page Size is 2M
+        mov ecx, MEMORY_SIZE ; each loop allocates 1G **if Page Size is 2M
         ; initialize pdp table
         lea ebx, [FREE_SPACE + 0x1000] ; pdp pointer
         lea eax, [FREE_SPACE + 0x2000] ; pd pointer
@@ -129,30 +131,35 @@ multiboot2_header_end:
         loop setup_pd_entries
     
     ; initialize gdt
+    
     cli ; disable IRQs
-
+    
     ; enable PAE
     mov eax, cr4
     or eax, PAE 
     mov cr4, eax
+    
 
     ; initialize PML4 pointer
     mov eax, FREE_SPACE
     mov cr3, eax
+    
 
     ; enable long mode
     mov ecx, EFER_MSR          
     rdmsr
     or eax, LONG_MODE               
     wrmsr
+    
 
     ; enable paging
     mov eax, cr0
     or eax, PAGING
-    mov cr0, eax
+    mov cr0, eax ; crushes here
+    
 
     lgdt [gdt.pointer]
-    
+
     jmp gdt.code:long_mode
 
 [BITS 64]
