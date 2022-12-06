@@ -23,8 +23,15 @@ void putchar(char c)
 
 void print_integer(int integer)
 {
-    int reversed = reverse_integer(integer), digit = 0;
+    int reversed = 0, digit = 0;
 
+    if (integer < 0)
+    {
+        integer *= -1;
+        putchar('-');
+    }
+
+    reversed = reverse_integer(integer);
     while (reversed > 0)
     {
         digit = reversed % 10;
