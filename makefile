@@ -8,40 +8,51 @@ LINKER_FLAGS    = -nostdlib \
 # --------------- ASM COMPILER --------------- #
 ASM_COMPILER 	= nasm
 ASM_FLAGS 		= -f elf64 \
-				  -g
+				  -g 
+				  
+				  
 
 # --------------- C COMPILER ------------------- #
 C_COMPILER = gcc
 C_FLAGS = -c \
-		  -ffreestanding
+		  -ffreestanding \
+		  -I./native-hypervisor/include # all includes will look at this dir
+# ---------------------------------------------- #
 
-BUILD_DIR = build
+OBJECT_DIR = build
 # /iso/boot/grub is a folder to configure grub
-OUTPUT_DIR = $(BUILD_DIR)/iso/boot
+OUTPUT_DIR = $(OBJECT_DIR)/iso/boot
 SRC_DIR = native-hypervisor
 
-OBJECT_FILES = $(BUILD_DIR)/initialize_machine.o $(BUILD_DIR)/entrypoint.o $(BUILD_DIR)/serial_print.o
+# https://stackoverflow.com/questions/68215653/makefile-pattern-rules-on-multiple-subdirectories
+ENTRYPOINT_ASM			   = entrypoint.asm
+BIOS_C_SOURCE_FILES        = $(addprefix bios/, $(shell find native-hypervisor/bios/ -maxdepth 1 -name '*.c' -printf '%f '))
+DEBUG_C_SOURCE_FILES       = $(addprefix debug/, $(shell find native-hypervisor/debug/ -maxdepth 1 -name '*.c' -printf '%f '))
+
+OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(BIOS_C_SOURCE_FILES:.c=.o)) \
+			   $(addprefix $(OBJECT_DIR)/,$(DEBUG_C_SOURCE_FILES:.c=.o)) \
+			   $(addprefix $(OBJECT_DIR)/,$(ENTRYPOINT_ASM:.asm=.o)) \
 
 
 .PHONY : clean
 
 # make iso
 hypervisor.iso : $(OUTPUT_DIR)/hypervisor
-	grub-mkrescue -o $@ $(BUILD_DIR)/iso
+	grub-mkrescue -o $@ $(OBJECT_DIR)/iso
 
 # link
 $(OUTPUT_DIR)/hypervisor : $(OBJECT_FILES)
 	$(LINKER) -o $@ $^
 
 # C
-$(BUILD_DIR)/%.o : $(SRC_DIR)/%.c # https://www.gnu.org/software/make/manual/make.html#Pattern-Rules
+$(OBJECT_DIR)/%.o : $(SRC_DIR)/%.c # https://www.gnu.org/software/make/manual/make.html#Pattern-Rules
 	$(C_COMPILER) $(C_FLAGS) -o $@ $^
 
 # Asm
-$(BUILD_DIR)/%.o : $(SRC_DIR)/%.asm
+$(OBJECT_DIR)/%.o : $(SRC_DIR)/%.asm
 	$(ASM_COMPILER) $(ASM_FLAGS) -o $@ $^
 
 clean :
-	rm $(OUTPUT_DIR)/hypervisor
-	rm $(BUILD_DIR)/*.o
-	rm hypervisor.iso
+	@rm -f $(OUTPUT_DIR)/hypervisor
+	@rm -f $(OBJECT_FILES)
+	@rm -f hypervisor.iso

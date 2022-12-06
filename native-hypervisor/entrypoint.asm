@@ -77,6 +77,8 @@ multiboot2_header_start:
 multiboot2_header_end:
 
     _start:
+        output_serial '.'
+
         ; disable previous paging
         mov eax, cr0
         and eax, ~PAGING
@@ -84,8 +86,6 @@ multiboot2_header_end:
 
         ; initialize PML4
         store_qword_little FREE_SPACE, 0x0, PML4_ENTRY
-
-        output_serial '1'
 
         
         mov ecx, MEMORY_SIZE ; each loop allocates 1G **if Page Size is 212M
@@ -127,7 +127,6 @@ multiboot2_header_end:
         add ebx, 8
         loop setup_pd_entries
     
-    ; initialize gdt
     
     cli ; disable IRQs
     
@@ -167,7 +166,7 @@ long_mode:
     mov es, ax 
     mov ss, ax
 
-    output_serial '2'
+    output_serial '.'
 
     call initialize_machine
 
