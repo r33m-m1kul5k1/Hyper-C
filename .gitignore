@@ -1,0 +1,4 @@
+build
+!build/iso/boot/grub/grub.cfg
+
+*.iso
