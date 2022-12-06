@@ -1,9 +1,9 @@
-
-#include "log.h"
+#include "serial.h"
 
 void initialize_machine()
 {
-
-    print("\nInitializing Machine\n");
-
+    println("\nInitializing Machine");
+    print_integer(1234);
+    print("\n");
+    print_integer(0);
 }

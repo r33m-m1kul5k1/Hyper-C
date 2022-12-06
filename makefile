@@ -42,7 +42,7 @@ hypervisor.iso : $(OUTPUT_DIR)/hypervisor
 
 # link
 $(OUTPUT_DIR)/hypervisor : $(OBJECT_FILES)
-	$(LINKER) -o $@ $^
+	$(LINKER) $(LINKER_FLAGS) -o $@ $^
 
 # C
 $(OBJECT_DIR)/%.o : $(SRC_DIR)/%.c # https://www.gnu.org/software/make/manual/make.html#Pattern-Rules
