@@ -16,6 +16,7 @@ ASM_FLAGS 		= -f elf64 \
 C_COMPILER = gcc
 C_FLAGS = -c \
 		  -ffreestanding \
+		  -g \
 		  -I./native-hypervisor/include # all includes will look at this dir
 # ---------------------------------------------- #
 

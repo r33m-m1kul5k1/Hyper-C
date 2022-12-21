@@ -3,11 +3,10 @@
 SECTIONS
 {
   /* location counter offset */
-  . = 0x10000;
+  . = 0x0;
 
   /* take all text, data and bss sections */
   .text : { *(.text) }
-  . = 0x8000000;
   .data : { *(.data) }
   .bss : { *(.bss) }
 }

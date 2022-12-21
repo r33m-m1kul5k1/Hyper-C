@@ -11,10 +11,11 @@ extern initialize_machine
 
 ; Memory defines
 %define MEMORY_SIZE 2
-%define FREE_SPACE 0x9000
+%define FREE_SPACE 0x9_000
 %define PML4_ENTRY (FREE_SPACE + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
-%define LARGE_PAGE_SIZE 0x200000
+%define LARGE_PAGE_SIZE 0x200_000
 
+%define PROTECTED_MODE_CODE_START 0x20_000
 
 
 
@@ -22,6 +23,7 @@ extern initialize_machine
 %define LONG_MODE (1 << 8)
 %define PAGING (1 << 31)
 %define PAE (1 << 5)
+%define PROTECTION_ENABLE (1 << 0)
 
 ; MSRs
 %define EFER_MSR 0xC0000080
@@ -155,33 +157,92 @@ multiboot2_header_end:
     
     lgdt [gdt.pointer]
 
-    jmp gdt.code:long_mode
+    jmp gdt.long_mode_code:setup_hypervisor
 
 
 [BITS 64]
-long_mode:
+setup_hypervisor:
     cli
-    mov ax, gdt.data
-    mov ds, ax 
-    mov es, ax 
-    mov ss, ax
+    mov rax, gdt.data
+    mov ds, rax 
+    mov es, rax 
+    mov ss, rax
+
 
     output_serial '.'
 
     call initialize_machine
 
+    output_serial '.'
+
+   
+    ; https://forum.nasm.us/index.php?topic=1474.0 
+    push gdt.protected_mode_code
+    push setup_real_mode
+    retfq
+    
+
+
+
+[BITS 32]
+setup_real_mode:
+
+    output_serial '.'
     hlt
+    ; cli
+    ; lidt [ivt_pointer]
+    ; 
+    ; output_serial '.'
+    ; output_serial '.'
+
+    ; jmp real_mode_code:load_os
+
+
+; [BITS 16]   
+; load_os:
+;     output_serial '.'
+
+;     ; disable long mode
+;     mov ecx, EFER_MSR          
+;     rdmsr
+;     and eax, ~LONG_MODE               
+;     wrmsr
+
+;     ; disable paging and protection mode
+;     mov eax, cr0
+;     and eax, ~(PAGING | PROTECTION_ENABLE)
+;     mov cr0, eax
+;     output_serial '.'
+
+
+;     ; disable PAE
+;     mov eax, cr4
+;     and eax, ~PAE 
+;     mov cr4, eax
+
+    
+;     hlt
 
 section .rodata
+
+
 gdt:
     dq 0
-.code: equ $ - gdt
-    ; type code |  present  | read/write| executable|  64-bit
+.long_mode_code: equ $ - gdt
+    ; type c/d   |  present  | read/write| executable |  64-bit
     dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)
 .data: equ $ - gdt
-    ; type data | present| read write    
-    dq (1<<44) | (1<<47) | (1<<41)
+    ; type c/d   | present| read write    
+    dq (1 << 44) | (1 << 47) | (1 << 41)
+
+.protected_mode_code: equ $ - gdt
+    ; type c/d   |  present  | read/write| executable
+    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43)
 
 .pointer:
     dw .pointer - gdt - 1 ; limit (the size of our gdt) 
     dq gdt
+
+ivt_pointer:
+    dw 0x3ff
+    dd 0 ; the IVT location is 0x0000
