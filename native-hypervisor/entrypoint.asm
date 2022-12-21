@@ -30,7 +30,9 @@ extern initialize_machine
 
 ; Serial
 %define COM1 0x3F8
-
+%define COM2 0x2F8
+%define COM3 0x3E8
+%define COM4 0x2E8
 
 ; stores a qword in little endian order
 ; %1 - address
@@ -79,6 +81,7 @@ multiboot2_header_start:
 multiboot2_header_end:
 
     _start:
+        mov word [0xb8000], 0x0248
         output_serial '.'
 
         ; disable previous paging
@@ -170,14 +173,16 @@ setup_hypervisor:
 
 
     output_serial '.'
-
+    
     call initialize_machine
-
-    output_serial '.'
-
-   
+    hlt
+    ; mov rax, 0x2f592f412f4b2f4f
+    ; mov qword [0xb8000], rax
+    
+    ; mov rax, 0x2f592f412f4b2f4f
+    ; mov qword [0xb8000], rax
     ; https://forum.nasm.us/index.php?topic=1474.0 
-    push gdt.protected_mode_code
+    push gdt.protected_mode_code ; doesn't work
     push setup_real_mode
     retfq
     
@@ -187,7 +192,11 @@ setup_hypervisor:
 [BITS 32]
 setup_real_mode:
 
-    output_serial '.'
+    mov word [0xb8000], 0x0248
+    hlt
+    cli 
+    lidt [ivt_pointer]
+    
     hlt
     ; cli
     ; lidt [ivt_pointer]
