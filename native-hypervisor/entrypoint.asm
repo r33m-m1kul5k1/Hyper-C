@@ -223,7 +223,7 @@ setup_real_mode:
 [BITS 16]   
 load_os:
     
-	mov ax, gdt.data
+	mov ax, 0
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
