@@ -190,8 +190,8 @@ setup_hypervisor:
 [BITS 32]
 setup_real_mode:
     
+    
 
-    mov esp, 0x90_000
     mov eax, gdt.data32
     mov ss, eax
     mov ds, eax
@@ -206,34 +206,46 @@ setup_real_mode:
     and eax, ~LONG_MODE               
     wrmsr
 
-    ; disable paging and protection mode
-    mov eax, cr0
-    and eax, ~(PAGING | PROTECTION_ENABLE)
-    mov cr0, eax
-    
-    ; disable PAE
-    mov eax, cr4
-    and eax, ~PAE
-    mov cr4, eax
     
 
-    jmp 0:load_os
+    output_serial 'q'
 
 
-[BITS 16]   
-load_os:
-    
-	mov ax, 0
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
 
-    
-    lidt [ivt_pointer]
-    sti
+    jmp gdt.code16:disable_protection
+
+
+[BITS 16]
+disable_protection:
+
     hlt
+
+    ; disable paging and protection mode
+;    mov eax, cr0
+;    and eax, ~(PAGING | PROTECTION_ENABLE)
+;    mov cr0, eax
+;xor ax, ax
+;mov cr3, ax
+    ; disable PAE only after disabling paging
+;    mov eax, cr4
+;    and eax, ~PAE
+;    mov cr4, eax
+;    hlt
+;    jmp 0:load_os
+
+;load_os:
+;
+;	mov ax, 0
+;	mov ds, ax
+;	mov es, ax
+;	mov fs, ax
+;	mov gs, ax
+;	mov ss, ax
+;
+;    
+;    lidt [ivt_pointer]
+;    sti
+;    hlt
 
 section .rodata
 
