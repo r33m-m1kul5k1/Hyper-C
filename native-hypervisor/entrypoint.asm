@@ -189,8 +189,6 @@ setup_hypervisor:
 
 [BITS 32]
 setup_real_mode:
-    
-    
 
     mov eax, gdt.data32
     mov ss, eax
@@ -206,46 +204,59 @@ setup_real_mode:
     and eax, ~LONG_MODE               
     wrmsr
 
-    
-
-    output_serial 'q'
+    output_serial '.'
 
 
-
-    jmp gdt.code16:disable_protection
+    push gdt.code16
+    push disable_protection
+    retfd
 
 
 [BITS 16]
 disable_protection:
 
-    hlt
+    mov eax, gdt.data
+    mov ss, eax
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+	mov gs, eax
+    
 
     ; disable paging and protection mode
-;    mov eax, cr0
-;    and eax, ~(PAGING | PROTECTION_ENABLE)
-;    mov cr0, eax
-;xor ax, ax
-;mov cr3, ax
-    ; disable PAE only after disabling paging
-;    mov eax, cr4
-;    and eax, ~PAE
-;    mov cr4, eax
-;    hlt
-;    jmp 0:load_os
+    mov eax, cr0
+    and eax, ~(PAGING | PROTECTION_ENABLE)
+    mov cr0, eax
 
-;load_os:
-;
-;	mov ax, 0
-;	mov ds, ax
-;	mov es, ax
-;	mov fs, ax
-;	mov gs, ax
-;	mov ss, ax
-;
-;    
-;    lidt [ivt_pointer]
-;    sti
-;    hlt
+    ; flush TLB
+    xor eax, eax
+    mov cr3, eax
+    
+    ; disable PAE only after disabling paging
+    mov eax, cr4
+    and eax, ~PAE
+    mov cr4, eax
+    
+    output_serial '.'
+
+    
+    jmp 0:load_os
+
+load_os:
+
+	mov ax, 0
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+
+   
+   lidt [ivt_pointer]
+   
+   output_serial '.'
+   ;sti ; can cause some undefine behavior
+   hlt
 
 section .rodata
 
