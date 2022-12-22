@@ -10,12 +10,13 @@ extern initialize_machine
 %define PAGE_SIZE (1 << 7)
 
 ; Memory defines
+; http://www.osdever.net/tutorials/view/the-world-of-protected-mode
 %define MEMORY_SIZE 2
-%define FREE_SPACE 0x9_000
+%define FREE_SPACE 0x80_000
+; the paging takes 0x1_000 * (MEMORY_SIZE + 2)
 %define PML4_ENTRY (FREE_SPACE + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
 %define LARGE_PAGE_SIZE 0x200_000
 
-%define PROTECTED_MODE_CODE_START 0x20_000
 
 
 
@@ -81,7 +82,7 @@ multiboot2_header_start:
 multiboot2_header_end:
 
     _start:
-        mov word [0xb8000], 0x0248
+        
         output_serial '.'
 
         ; disable previous paging
@@ -93,7 +94,7 @@ multiboot2_header_end:
         store_qword_little FREE_SPACE, 0x0, PML4_ENTRY
 
         
-        mov ecx, MEMORY_SIZE ; each loop allocates 1G **if Page Size is 212M
+        mov ecx, MEMORY_SIZE ; each loop allocates 1G
         ; initialize pdp table
         lea ebx, [FREE_SPACE + 0x1000] ; pdp pointer
         lea eax, [FREE_SPACE + 0x2000] ; pd pointer
@@ -160,29 +161,26 @@ multiboot2_header_end:
     
     lgdt [gdt.pointer]
 
-    jmp gdt.long_mode_code:setup_hypervisor
+    jmp gdt.code64:setup_hypervisor
 
 
 [BITS 64]
 setup_hypervisor:
-    cli
+
     mov rax, gdt.data
     mov ds, rax 
     mov es, rax 
     mov ss, rax
-
+    mov fs, rax
+    mov gs, rax
+    
 
     output_serial '.'
     
     call initialize_machine
-    hlt
-    ; mov rax, 0x2f592f412f4b2f4f
-    ; mov qword [0xb8000], rax
     
-    ; mov rax, 0x2f592f412f4b2f4f
-    ; mov qword [0xb8000], rax
     ; https://forum.nasm.us/index.php?topic=1474.0 
-    push gdt.protected_mode_code ; doesn't work
+    push gdt.code32
     push setup_real_mode
     retfq
     
@@ -191,62 +189,76 @@ setup_hypervisor:
 
 [BITS 32]
 setup_real_mode:
+    
 
-    mov word [0xb8000], 0x0248
-    hlt
-    cli 
+    mov esp, 0x90_000
+    mov eax, gdt.data32
+    mov ss, eax
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+	mov gs, eax
+
+
+    ; disable long mode
+    mov ecx, EFER_MSR          
+    rdmsr
+    and eax, ~LONG_MODE               
+    wrmsr
+
+    ; disable paging and protection mode
+    mov eax, cr0
+    and eax, ~(PAGING | PROTECTION_ENABLE)
+    mov cr0, eax
+    
+    ; disable PAE
+    mov eax, cr4
+    and eax, ~PAE
+    mov cr4, eax
+    
+
+    jmp 0:load_os
+
+
+[BITS 16]   
+load_os:
+    
+	mov ax, gdt.data
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+
+    
     lidt [ivt_pointer]
-    
+    sti
     hlt
-    ; cli
-    ; lidt [ivt_pointer]
-    ; 
-    ; output_serial '.'
-    ; output_serial '.'
-
-    ; jmp real_mode_code:load_os
-
-
-; [BITS 16]   
-; load_os:
-;     output_serial '.'
-
-;     ; disable long mode
-;     mov ecx, EFER_MSR          
-;     rdmsr
-;     and eax, ~LONG_MODE               
-;     wrmsr
-
-;     ; disable paging and protection mode
-;     mov eax, cr0
-;     and eax, ~(PAGING | PROTECTION_ENABLE)
-;     mov cr0, eax
-;     output_serial '.'
-
-
-;     ; disable PAE
-;     mov eax, cr4
-;     and eax, ~PAE 
-;     mov cr4, eax
-
-    
-;     hlt
 
 section .rodata
 
 
 gdt:
     dq 0
-.long_mode_code: equ $ - gdt
+.code64: equ $ - gdt
     ; type c/d   |  present  | read/write| executable |  64-bit
     dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)
-.data: equ $ - gdt
-    ; type c/d   | present| read write    
-    dq (1 << 44) | (1 << 47) | (1 << 41)
 
-.protected_mode_code: equ $ - gdt
+.code32: equ $ - gdt
+    ; type c/d   |  present  | read/write| executable| 32-bit
+    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 54)
+
+.code16: equ $ - gdt
     ; type c/d   |  present  | read/write| executable
-    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43)
+    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) 
+
+.data32: equ $ - gdt
+    ; type c/d   | present   | read write| 32-bit    
+    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 54)
+
+.data: equ $ - gdt
+    ; type c/d   | present   | read write  
+    dq (1 << 44) | (1 << 47) | (1 << 41)
 
 .pointer:
     dw .pointer - gdt - 1 ; limit (the size of our gdt) 
