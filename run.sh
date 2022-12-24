@@ -4,4 +4,5 @@ qemu-system-x86_64 -cdrom hypervisor.iso \
 -mon chardev=char0,mode=readline \
 -serial chardev:char0 \
 -m 2G \
+-drive file=./bootimage-CrabOS.bin,format=raw,media=cdrom \
 #-s -S

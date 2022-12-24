@@ -206,6 +206,7 @@ setup_real_mode:
 
     output_serial '.'
 
+    
 
     push gdt.code16
     push disable_protection
@@ -236,27 +237,56 @@ disable_protection:
     mov eax, cr4
     and eax, ~PAE
     mov cr4, eax
+
     
     output_serial '.'
-
     
     jmp 0:load_os
 
 load_os:
 
-	mov ax, 0
+    cli
+    mov ax, 0
 	mov ds, ax
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
+    lidt [ivt_pointer]
 
-   
-   lidt [ivt_pointer]
-   
-   output_serial '.'
-   ;sti ; can cause some undefine behavior
-   hlt
+    
+    mov ax, 0
+    int 0x10 ; the code freezes here
+    output_serial '.'
+
+    mov ah, 0x0e    ; function number = 0Eh : Display Character
+    mov al, '!'     ; AL = code of character to display
+    int 0x10 
+    output_serial 'v'
+    
+
+    ; xor ax, ax
+    ; mov ah, 0x42
+    ; mov dl, 0x80 ; driver index
+    ; mov si, dap_size
+    ; xor bx, bx
+    ; int 0x13
+
+
+    
+    
+    sti ; can cause some undefine behavior
+    hlt
+
+section .data
+
+dap_size db 0x10
+unused db 0x0
+number_of_sectors dw 0x1
+destination_offset dw 0x7c00
+destination_segment dw 0x0
+source dq 0x0 ; first sector
+
 
 section .rodata
 
