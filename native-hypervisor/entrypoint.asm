@@ -2,7 +2,7 @@
 ; jumps to long mode, (https://wiki.osdev.org/Entering_Long_Mode_Directly)
 ; calls the main c function,
 ; loads the first sector of the OS bootloader
-
+global protected_mode_pml4
 extern initialize_machine
 ; Entry defines
 %define PAGE_PRESENT (1 << 0)
@@ -10,9 +10,10 @@ extern initialize_machine
 %define PAGE_SIZE (1 << 7)
 
 ; Memory defines
-; http://www.osdever.net/tutorials/view/the-world-of-protected-mode
+; http://www.osdever.net/tutorials/view/the-world-of-protected-mode - free space (0x500 - 0x9FFFF)
 %define MEMORY_SIZE 2
 %define FREE_SPACE 0x80_000
+
 ; the paging takes 0x1_000 * (MEMORY_SIZE + 2)
 %define PML4_ENTRY (FREE_SPACE + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
 %define LARGE_PAGE_SIZE 0x200_000
@@ -82,17 +83,13 @@ multiboot2_header_start:
 multiboot2_header_end:
 
     _start:
+    
+
         
         output_serial '.'
 
-        ; disable previous paging
-        mov eax, cr0
-        and eax, ~PAGING
-        mov cr0, eax
-
         ; initialize PML4
         store_qword_little FREE_SPACE, 0x0, PML4_ENTRY
-
         
         mov ecx, MEMORY_SIZE ; each loop allocates 1G
         ; initialize pdp table
@@ -134,30 +131,33 @@ multiboot2_header_end:
         loop setup_pd_entries
     
     
-    cli ; disable IRQs
+    
+    ; disable previous paging
+    mov eax, cr0
+    and eax, ~PAGING
+    mov cr0, eax
     
     ; enable PAE
     mov eax, cr4
     or eax, PAE 
     mov cr4, eax
     
-
     ; initialize PML4 pointer
     mov eax, FREE_SPACE
     mov cr3, eax
-    
 
     ; enable long mode
     mov ecx, EFER_MSR          
     rdmsr
     or eax, LONG_MODE               
     wrmsr
-    
 
     ; enable paging
     mov eax, cr0
     or eax, PAGING
     mov cr0, eax
+
+    
     
     lgdt [gdt.pointer]
 
@@ -167,7 +167,7 @@ multiboot2_header_end:
 [BITS 64]
 setup_hypervisor:
 
-    mov rax, gdt.data
+    mov rax, gdt.data ; add limit to the selector
     mov ds, rax 
     mov es, rax 
     mov ss, rax
@@ -181,14 +181,14 @@ setup_hypervisor:
     
     ; https://forum.nasm.us/index.php?topic=1474.0 
     push gdt.code32
-    push setup_real_mode
+    push compatibility_mode
     retfq
     
 
 
 
 [BITS 32]
-setup_real_mode:
+compatibility_mode:
 
     mov eax, gdt.data32
     mov ss, eax
@@ -198,19 +198,39 @@ setup_real_mode:
 	mov gs, eax
 
 
-    ; disable long mode
+    mov eax, cr0
+    and eax, ~(PAGING)
+    mov cr0, eax
+    ; note that I stay with the same page tables
+
     mov ecx, EFER_MSR          
     rdmsr
     and eax, ~LONG_MODE               
     wrmsr
 
+    mov eax, cr0
+    or eax, PAGING
+    mov cr0, eax
+
     output_serial '.'
+    ; jump to 32 ?
+
+    push gdt.code32
+    push protected_mode
+    retfd ; jmp works for HyperWin
 
     
 
-    push gdt.code16
-    push disable_protection
-    retfd
+
+protected_mode:
+
+    cli
+    ; paging must be identity mapped
+    mov eax, cr0
+    and eax, ~(PAGING)
+    mov cr0, eax
+
+    hlt
 
 
 [BITS 16]
@@ -223,15 +243,14 @@ disable_protection:
     mov fs, eax
 	mov gs, eax
     
+    
 
     ; disable paging and protection mode
     mov eax, cr0
     and eax, ~(PAGING | PROTECTION_ENABLE)
     mov cr0, eax
 
-    ; flush TLB
-    xor eax, eax
-    mov cr3, eax
+    
     
     ; disable PAE only after disabling paging
     mov eax, cr4
@@ -252,17 +271,20 @@ load_os:
 	mov fs, ax
 	mov gs, ax
 	mov ss, ax
+
+    mov sp, 0x600
+
+
     lidt [ivt_pointer]
 
     
     mov ax, 0
     int 0x10 ; the code freezes here
-    output_serial '.'
+
 
     mov ah, 0x0e    ; function number = 0Eh : Display Character
     mov al, '!'     ; AL = code of character to display
     int 0x10 
-    output_serial 'v'
     
 
     ; xor ax, ax
@@ -287,6 +309,7 @@ destination_offset dw 0x7c00
 destination_segment dw 0x0
 source dq 0x0 ; first sector
 
+protected_mode_pml4 dd 0 
 
 section .rodata
 
@@ -319,4 +342,4 @@ gdt:
 
 ivt_pointer:
     dw 0x3ff
-    dd 0 ; the IVT location is 0x0000
+    dd 0x0 ; the IVT location is 0x0000
