@@ -17,22 +17,22 @@ C_COMPILER = gcc
 C_FLAGS = -c \
 		  -ffreestanding \
 		  -g \
-		  -I./native-hypervisor/include # all includes will look at this dir
+		  -I./src/include # all includes will look at this dir
 # ---------------------------------------------- #
 
 OBJECT_DIR = build
 # /iso/boot/grub is a folder to configure grub
 OUTPUT_DIR = $(OBJECT_DIR)/iso/boot
-SRC_DIR = native-hypervisor
+SRC_DIR = src
 
 # https://stackoverflow.com/questions/68215653/makefile-pattern-rules-on-multiple-subdirectories
-ENTRYPOINT_ASM			   = entrypoint.asm
-BIOS_C_SOURCE_FILES        = $(addprefix bios/, $(shell find native-hypervisor/bios/ -maxdepth 1 -name '*.c' -printf '%f '))
-DEBUG_C_SOURCE_FILES       = $(addprefix debug/, $(shell find native-hypervisor/debug/ -maxdepth 1 -name '*.c' -printf '%f '))
+BOOT_ASM_SOURCE_FILES		= $(addprefix boot/, $(shell find src/boot/ -maxdepth 1 -name '*.c' -printf '%f '))
+VMM_C_SOURCE_FILES        	= $(addprefix vmm/, $(shell find src/vmm/ -maxdepth 1 -name '*.c' -printf '%f '))
+DRIVERS_C_SOURCE_FILES      = $(addprefix drivers/, $(shell find src/drivers/ -maxdepth 1 -name '*.c' -printf '%f '))
 
-OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(BIOS_C_SOURCE_FILES:.c=.o)) \
-			   $(addprefix $(OBJECT_DIR)/,$(DEBUG_C_SOURCE_FILES:.c=.o)) \
-			   $(addprefix $(OBJECT_DIR)/,$(ENTRYPOINT_ASM:.asm=.o)) \
+OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(VMM_C_SOURCE_FILES:.c=.o)) \
+			   $(addprefix $(OBJECT_DIR)/,$(DRIVERS_C_SOURCE_FILES:.c=.o)) \
+			   $(addprefix $(OBJECT_DIR)/,$(BOOT_ASM_SOURCE_FILES:.asm=.o)) \
 
 
 .PHONY : clean

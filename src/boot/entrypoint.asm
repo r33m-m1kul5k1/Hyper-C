@@ -2,8 +2,9 @@
 ; jumps to long mode, (https://wiki.osdev.org/Entering_Long_Mode_Directly)
 ; calls the main c function,
 ; loads the first sector of the OS bootloader
-global protected_mode_pml4
 extern initialize_machine
+global _start
+
 ; Entry defines
 %define PAGE_PRESENT (1 << 0)
 %define PAGE_WRITE (1 << 1)
@@ -53,7 +54,7 @@ extern initialize_machine
 %endmacro
 
 
-global _start
+
 
 [BITS 32]
 section .text
@@ -308,8 +309,6 @@ number_of_sectors dw 0x1
 destination_offset dw 0x7c00
 destination_segment dw 0x0
 source dq 0x0 ; first sector
-
-protected_mode_pml4 dd 0 
 
 section .rodata
 
