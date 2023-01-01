@@ -4,7 +4,7 @@
 
 extern _start
 
-
+section .multiboot
 multiboot2_header_start:
 
     .magic dd MUTLIBOOT_MAGIC 

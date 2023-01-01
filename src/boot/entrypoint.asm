@@ -1,122 +1,24 @@
-; This entry point 
-; jumps to long mode, (https://wiki.osdev.org/Entering_Long_Mode_Directly)
-; calls the main c function,
-; loads the first sector of the OS bootloader
-
-; Entry defines
-%define PAGE_PRESENT (1 << 0)
-%define PAGE_WRITE (1 << 1)
-%define PAGE_SIZE (1 << 7)
-
-; Memory defines
-; http://www.osdever.net/tutorials/view/the-world-of-protected-mode - free space (0x500 - 0x9FFFF)
-%define MEMORY_SIZE 2
-%define FREE_SPACE_OFFSET 0x1_0000
-
-; the paging takes 0x1_000 * (MEMORY_SIZE + 2)
-%define PML4_ENTRY (FREE_SPACE_OFFSET + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
-%define LARGE_PAGE_SIZE 0x200_000
-
-
-
-
 ; Flags
 %define LONG_MODE (1 << 8)
 %define PAGING (1 << 31)
 %define PAE (1 << 5)
 %define PROTECTION_ENABLE (1 << 0)
-
+%define PML4_POINTER_ADDRESS 0x1_0000
 ; MSRs
 %define EFER_MSR 0xC0000080
 
-; Serial
-%define COM1 0x3F8
-%define COM2 0x2F8
-%define COM3 0x3E8
-%define COM4 0x2E8
-
-; stores a qword in little endian order
-; %1 - address
-; %2 - higher dword
-; %3 - lower dword
-%macro store_qword_little 3
-    mov ebx, %1
-    mov dword [ebx], %3
-    mov dword [ebx + 4], %2
-%endmacro
-
-%macro output_serial 1
-    mov dx, COM1
-    mov al, %1
-    out dx, al
-%endmacro
-
+%include "src/boot/gdt.asm"
 
 global _start
 extern initialize_machine
+extern setup_paging
 
-section .multiboot
-%include "src/boot/multiboot.asm"
-
-section .data
-%include "src/boot/gdt.asm"
-
-dap_size db 0x10
-unused db 0x0
-number_of_sectors dw 0x1
-destination_offset dw 0x7c00
-destination_segment dw 0x0
-source dq 0x0 ; first sector
 
 section .text
 [bits 32]
-    _start:
-
-        output_serial '.'
-
-        ; initialize PML4
-        store_qword_little FREE_SPACE_OFFSET, 0x0, PML4_ENTRY
-        
-        mov ecx, MEMORY_SIZE ; each loop allocates 1G
-        ; initialize pdp table
-        lea ebx, [FREE_SPACE_OFFSET + 0x1000] ; pdp pointer
-        lea eax, [FREE_SPACE_OFFSET + 0x2000] ; pd pointer
-        
-    setup_pdp_entries:
-
-        mov edx, eax
-        or edx, (PAGE_WRITE | PAGE_PRESENT)
-        
-        ; save pd entry to memory
-        mov dword [ebx], edx
-        mov dword [ebx + 4], 0x0
-
-        ; advance entry
-        add eax, 0x1000
-        add ebx, 8 
-
-        loop setup_pdp_entries
-        
-    mov ecx, MEMORY_SIZE
-    shl ecx, 9
-    mov eax, 0 
-    lea ebx, [FREE_SPACE_OFFSET + 0x2000] ; first pd pointer
-
-    ; note that this loop will overflow to other pd tables
-    setup_pd_entries:
-        
-        mov edx, eax
-        or edx, (PAGE_SIZE | PAGE_WRITE | PAGE_PRESENT) 
-
-        ; save page table entry
-        mov dword [ebx], edx
-        mov dword [ebx + 4], 0x0
-
-        add eax, LARGE_PAGE_SIZE
-        add ebx, 8
-        loop setup_pd_entries
+_start:
     
-    
+    call setup_paging
     
     ; disable previous paging
     mov eax, cr0
@@ -129,21 +31,17 @@ section .text
     mov cr4, eax
     
     ; initialize PML4 pointer
-    mov eax, FREE_SPACE_OFFSET
+    mov eax, PML4_POINTER_ADDRESS
     mov cr3, eax
-
 
     mov ecx, EFER_MSR          
     rdmsr
     or eax, LONG_MODE               
     wrmsr
 
-
     mov eax, cr0
     or eax, PAGING
     mov cr0, eax
-
-    
     
     lgdt [gdt.pointer]
 
@@ -159,11 +57,8 @@ setup_hypervisor:
     mov ss, rax
     mov fs, rax
     mov gs, rax
-    
 
-    output_serial '.'
     call initialize_machine
-
 
     ; https://forum.nasm.us/index.php?topic=1474.0 
     push gdt.IA32_code_segment
@@ -182,24 +77,20 @@ compatibility_mode:
     mov fs, eax
 	mov gs, eax
 
-
     mov eax, cr0
     and eax, ~(PAGING)
     mov cr0, eax
-    
+
     ; note that I stay with the same page tables
     mov ecx, EFER_MSR          
     rdmsr
     and eax, ~LONG_MODE               
     wrmsr
 
-    
-    output_serial '.'
     mov eax, cr0
     or eax, PAGING
     mov cr0, eax
 
-    
     hlt
 
     jmp gdt.IA32_code_segment:protected_mode
@@ -215,8 +106,6 @@ protected_mode:
     and eax, ~(PAGING)
     mov cr0, eax
 
-    output_serial '.'
-    
     hlt
 
 
@@ -244,8 +133,6 @@ protected_mode:
 ;     and eax, ~PAE
 ;     mov cr4, eax
 
-    
-;     output_serial '.'
     
 ;     jmp 0:load_os
 
@@ -285,3 +172,4 @@ protected_mode:
 ;     ; int 0x13
 
 ;     hlt
+
