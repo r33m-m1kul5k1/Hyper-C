@@ -1,0 +1,10 @@
+
+the problems:
+
+1. PML4 pointer is lost / corrupted after jumping to compatibility mode
+2. relocation doesn't work on 16 bits
+3. gdt is not initialized as needed
+
+changes that have been made:
+1. only .text .data and the multiboot header are the project sections
+2. relocation of the PIC addresses.

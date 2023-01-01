@@ -13,10 +13,10 @@ global _start
 ; Memory defines
 ; http://www.osdever.net/tutorials/view/the-world-of-protected-mode - free space (0x500 - 0x9FFFF)
 %define MEMORY_SIZE 2
-%define FREE_SPACE 0x80_000
+%define FREE_SPACE_OFFSET 0x100_000
 
 ; the paging takes 0x1_000 * (MEMORY_SIZE + 2)
-%define PML4_ENTRY (FREE_SPACE + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
+%define PML4_ENTRY (FREE_SPACE_OFFSET + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
 %define LARGE_PAGE_SIZE 0x200_000
 
 
@@ -55,9 +55,24 @@ global _start
 
 
 global _start
+global data_segment_end
 
-[BITS 32]
+
+section .multiboot
+%include "src/boot/multiboot.asm"
+
+section .data
+%include "src/boot/gdt.asm"
+
+dap_size db 0x10
+unused db 0x0
+number_of_sectors dw 0x1
+destination_offset dw 0x7c00
+destination_segment dw 0x0
+source dq 0x0 ; first sector
+
 section .text
+[BITS 32]
     _start:
     
 
@@ -65,12 +80,12 @@ section .text
         output_serial '.'
 
         ; initialize PML4
-        store_qword_little FREE_SPACE, 0x0, PML4_ENTRY
+        store_qword_little FREE_SPACE_OFFSET, 0x0, PML4_ENTRY
         
         mov ecx, MEMORY_SIZE ; each loop allocates 1G
         ; initialize pdp table
-        lea ebx, [FREE_SPACE + 0x1000] ; pdp pointer
-        lea eax, [FREE_SPACE + 0x2000] ; pd pointer
+        lea ebx, [FREE_SPACE_OFFSET + 0x1000] ; pdp pointer
+        lea eax, [FREE_SPACE_OFFSET + 0x2000] ; pd pointer
         
     setup_pdp_entries:
 
@@ -90,7 +105,7 @@ section .text
     mov ecx, MEMORY_SIZE
     shl ecx, 9
     mov eax, 0 
-    lea ebx, [FREE_SPACE + 0x2000] ; first pd pointer
+    lea ebx, [FREE_SPACE_OFFSET + 0x2000] ; first pd pointer
 
     ; note that this loop will overflow to other pd tables
     setup_pd_entries:
@@ -119,7 +134,7 @@ section .text
     mov cr4, eax
     
     ; initialize PML4 pointer
-    mov eax, FREE_SPACE
+    mov eax, FREE_SPACE_OFFSET
     mov cr3, eax
 
     ; enable long mode
@@ -143,7 +158,7 @@ section .text
 [BITS 64]
 setup_hypervisor:
 
-    mov rax, gdt.data ; add limit to the selector
+    mov rax, gdt.data
     mov ds, rax 
     mov es, rax 
     mov ss, rax
@@ -155,6 +170,7 @@ setup_hypervisor:
     
     call initialize_machine
     
+    hlt
     ; https://forum.nasm.us/index.php?topic=1474.0 
     push gdt.code32
     push compatibility_mode
@@ -166,6 +182,7 @@ setup_hypervisor:
 [BITS 32]
 compatibility_mode:
 
+    
     mov eax, gdt.data32
     mov ss, eax
     mov ds, eax
@@ -177,6 +194,7 @@ compatibility_mode:
     mov eax, cr0
     and eax, ~(PAGING)
     mov cr0, eax
+    
     ; note that I stay with the same page tables
 
     mov ecx, EFER_MSR          
@@ -184,12 +202,13 @@ compatibility_mode:
     and eax, ~LONG_MODE               
     wrmsr
 
+    output_serial '.'
     mov eax, cr0
     or eax, PAGING
     mov cr0, eax
 
     output_serial '.'
-    ; jump to 32 ?
+
 
     push gdt.code32
     push protected_mode
@@ -197,7 +216,7 @@ compatibility_mode:
 
     
 
-
+[BITS 32]
 protected_mode:
 
     cli
@@ -209,111 +228,70 @@ protected_mode:
     hlt
 
 
-[BITS 16]
-disable_protection:
+; [BITS 16]
+; disable_protection:
 
-    mov eax, gdt.data
-    mov ss, eax
-    mov ds, eax
-    mov es, eax
-    mov fs, eax
-	mov gs, eax
+;     mov eax, gdt.data
+;     mov ss, eax
+;     mov ds, eax
+;     mov es, eax
+;     mov fs, eax
+; 	mov gs, eax
     
     
 
-    ; disable paging and protection mode
-    mov eax, cr0
-    and eax, ~(PAGING | PROTECTION_ENABLE)
-    mov cr0, eax
+;     ; disable paging and protection mode
+;     mov eax, cr0
+;     and eax, ~(PAGING | PROTECTION_ENABLE)
+;     mov cr0, eax
 
     
     
-    ; disable PAE only after disabling paging
-    mov eax, cr4
-    and eax, ~PAE
-    mov cr4, eax
+;     ; disable PAE only after disabling paging
+;     mov eax, cr4
+;     and eax, ~PAE
+;     mov cr4, eax
 
     
-    output_serial '.'
+;     output_serial '.'
     
-    jmp 0:load_os
+;     jmp 0:load_os
 
-load_os:
+; [BITS 16]
+; load_os:
 
-    cli
-    mov ax, 0
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
+;     cli
+;     mov ax, 0
+; 	mov ds, ax
+; 	mov es, ax
+; 	mov fs, ax
+; 	mov gs, ax
+; 	mov ss, ax
 
-    mov sp, 0x600
-
-
-    lidt [ivt_pointer]
-
-    
-    mov ax, 0
-    int 0x10 ; the code freezes here
+;     mov sp, 0x600
 
 
-    mov ah, 0x0e    ; function number = 0Eh : Display Character
-    mov al, '!'     ; AL = code of character to display
-    int 0x10 
-    
-
-    ; xor ax, ax
-    ; mov ah, 0x42
-    ; mov dl, 0x80 ; driver index
-    ; mov si, dap_size
-    ; xor bx, bx
-    ; int 0x13
-
+;     lidt [ivt_pointer]
 
     
+;     mov ax, 0
+;     int 0x10 ; the code freezes here
+
+
+;     mov ah, 0x0e    ; function number = 0Eh : Display Character
+;     mov al, '!'     ; AL = code of character to display
+;     int 0x10 
     
-    sti ; can cause some undefine behavior
-    hlt
 
-section .data
-
-dap_size db 0x10
-unused db 0x0
-number_of_sectors dw 0x1
-destination_offset dw 0x7c00
-destination_segment dw 0x0
-source dq 0x0 ; first sector
-
-section .rodata
+;     ; xor ax, ax
+;     ; mov ah, 0x42
+;     ; mov dl, 0x80 ; driver index
+;     ; mov si, dap_size
+;     ; xor bx, bx
+;     ; int 0x13
 
 
-gdt:
-    dq 0
-.code64: equ $ - gdt
-    ; type c/d   |  present  | read/write| executable |  64-bit
-    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 53)
-
-.code32: equ $ - gdt
-    ; type c/d   |  present  | read/write| executable| 32-bit
-    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) | (1 << 54)
-
-.code16: equ $ - gdt
-    ; type c/d   |  present  | read/write| executable
-    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 43) 
-
-.data32: equ $ - gdt
-    ; type c/d   | present   | read write| 32-bit    
-    dq (1 << 44) | (1 << 47) | (1 << 41) | (1 << 54)
-
-.data: equ $ - gdt
-    ; type c/d   | present   | read write  
-    dq (1 << 44) | (1 << 47) | (1 << 41)
-
-.pointer:
-    dw .pointer - gdt - 1 ; limit (the size of our gdt) 
-    dq gdt
-
-ivt_pointer:
-    dw 0x3ff
-    dd 0x0 ; the IVT location is 0x0000
+    
+    
+;     sti ; can cause some undefine behavior
+;     hlt

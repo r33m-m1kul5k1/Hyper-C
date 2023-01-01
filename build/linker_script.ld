@@ -1,14 +1,16 @@
-/*ref https://sourceware.org/binutils/docs-2.30/ld/Simple-Example.html*/
+/*
+ ref https://sourceware.org/binutils/docs-2.30/ld/Simple-Example.html 
+*/
+
+HEADER_START = 0x100000;
 
 SECTIONS
 {
   /* location counter offset */
-  . = 0x0;
+  . = HEADER_START;
 
   /* take all text, data and bss sections */
   .multiboot :  { *(.multiboot) }
   .text :       { *(.text) }
   .data :       { *(.data) }
-  .rodata :     { *(.rodata) }
-  .bss :        { *(.bss) }
 }
