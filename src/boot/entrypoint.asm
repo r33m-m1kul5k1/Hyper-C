@@ -69,7 +69,7 @@ destination_segment dw 0x0
 source dq 0x0 ; first sector
 
 section .text
-[BITS 32]
+[bits 32]
     _start:
 
         output_serial '.'
@@ -132,13 +132,13 @@ section .text
     mov eax, FREE_SPACE_OFFSET
     mov cr3, eax
 
-    ; enable long mode
+
     mov ecx, EFER_MSR          
     rdmsr
     or eax, LONG_MODE               
     wrmsr
 
-    ; enable paging
+
     mov eax, cr0
     or eax, PAGING
     mov cr0, eax
@@ -150,7 +150,7 @@ section .text
     jmp gdt.IA32e_code_segment:setup_hypervisor
 
 
-[BITS 64]
+[bits 64]
 setup_hypervisor:
 
     mov rax, gdt.data_segment
@@ -163,80 +163,72 @@ setup_hypervisor:
 
     output_serial '.'
     call initialize_machine
+
+
+    ; https://forum.nasm.us/index.php?topic=1474.0 
+    push gdt.IA32_code_segment
+    push compatibility_mode
+    retfq
+
+
+
+[bits 32]
+compatibility_mode:
+
+    mov eax, gdt.IA32_data_segment
+    mov ss, eax
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+	mov gs, eax
+
+
+    mov eax, cr0
+    and eax, ~(PAGING)
+    mov cr0, eax
+    
+    ; note that I stay with the same page tables
+    mov ecx, EFER_MSR          
+    rdmsr
+    and eax, ~LONG_MODE               
+    wrmsr
+
+    
+    output_serial '.'
+    mov eax, cr0
+    or eax, PAGING
+    mov cr0, eax
+
     
     hlt
 
-
-
-
-    ; ; https://forum.nasm.us/index.php?topic=1474.0 
-    ; push gdt.IA32_code_segment
-    ; push compatibility_mode
-    ; retfq
-    
-
-
-
-; [BITS 32]
-; compatibility_mode:
-
-;     mov eax, gdt.IA32_data_segment
-;     mov ss, eax
-;     mov ds, eax
-;     mov es, eax
-;     mov fs, eax
-; 	mov gs, eax
-
-
-;     mov eax, cr0
-;     and eax, ~(PAGING)
-;     mov cr0, eax
-    
-;     ; note that I stay with the same page tables
-;     mov eax, FREE_SPACE_OFFSET
-;     mov cr3, eax
-
-;     mov ecx, EFER_MSR          
-;     rdmsr
-;     and eax, ~LONG_MODE               
-;     wrmsr
-
-    
-;     output_serial '.'
-;     mov eax, cr0
-;     or eax, PAGING
-;     mov cr0, eax
-
-;     output_serial '.'
-
-
-;     push gdt.IA32_code_segment
-;     push protected_mode
-;     retfd ; jmp works for HyperWin
+    jmp gdt.IA32_code_segment:protected_mode
 
     
 
-; [BITS 32]
-; protected_mode:
+[BITS 32]
+protected_mode:
 
-;     cli
-;     ; paging must be identity mapped
-;     mov eax, cr0
-;     and eax, ~(PAGING)
-;     mov cr0, eax
+    cli
+    ; paging must be identity mapped
+    mov eax, cr0
+    and eax, ~(PAGING)
+    mov cr0, eax
 
-;     hlt
+    output_serial '.'
+    
+    hlt
 
 
 ; [BITS 16]
 ; disable_protection:
 
-;     mov eax, gdt.data
+;     mov eax, gdt.data_segment
 ;     mov ss, eax
 ;     mov ds, eax
 ;     mov es, eax
 ;     mov fs, eax
-; 	mov gs, eax
+;     mov gs, eax
     
     
 
@@ -268,10 +260,12 @@ setup_hypervisor:
 ; 	mov gs, ax
 ; 	mov ss, ax
 
+;     lidt [ivt_pointer]
+;     sti 
+
 ;     mov sp, 0x600
 
 
-;     lidt [ivt_pointer]
 
     
 ;     mov ax, 0
@@ -290,8 +284,4 @@ setup_hypervisor:
 ;     ; xor bx, bx
 ;     ; int 0x13
 
-
-    
-    
-;     sti ; can cause some undefine behavior
 ;     hlt
