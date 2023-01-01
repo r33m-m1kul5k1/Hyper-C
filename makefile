@@ -3,9 +3,8 @@
 # --------------- LINKER --------------- #
 LINKER 			= ld
 LINKER_FLAGS    = -nostdlib \
-				  --oformat elf64-x86-64 \
-				  -T build/linker_script.ld \
-				  -n # do not page align data
+				  -T linker_script.ld \
+
 
 # --------------- ASM COMPILER --------------- #
 ASM_COMPILER 	= nasm

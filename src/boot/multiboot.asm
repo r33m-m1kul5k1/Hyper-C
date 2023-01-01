@@ -1,6 +1,6 @@
 %define MUTLIBOOT_MAGIC 0xE85250D6
 %define I386 0
-%define HEADER_ADDRESS 0x100000
+%define HEADER_ADDRESS 0x10_0000
 
 extern _start
 

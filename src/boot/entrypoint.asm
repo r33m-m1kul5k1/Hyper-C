@@ -2,8 +2,6 @@
 ; jumps to long mode, (https://wiki.osdev.org/Entering_Long_Mode_Directly)
 ; calls the main c function,
 ; loads the first sector of the OS bootloader
-extern initialize_machine
-global _start
 
 ; Entry defines
 %define PAGE_PRESENT (1 << 0)
@@ -13,7 +11,7 @@ global _start
 ; Memory defines
 ; http://www.osdever.net/tutorials/view/the-world-of-protected-mode - free space (0x500 - 0x9FFFF)
 %define MEMORY_SIZE 2
-%define FREE_SPACE_OFFSET 0x100_000
+%define FREE_SPACE_OFFSET 0x1_0000
 
 ; the paging takes 0x1_000 * (MEMORY_SIZE + 2)
 %define PML4_ENTRY (FREE_SPACE_OFFSET + 0x1000 | (PAGE_WRITE | PAGE_PRESENT)) ; <offset><flags>
@@ -55,7 +53,7 @@ global _start
 
 
 global _start
-
+extern initialize_machine
 
 section .multiboot
 %include "src/boot/multiboot.asm"
@@ -73,9 +71,7 @@ source dq 0x0 ; first sector
 section .text
 [BITS 32]
     _start:
-    
 
-        
         output_serial '.'
 
         ; initialize PML4
@@ -166,65 +162,70 @@ setup_hypervisor:
     
 
     output_serial '.'
-    
     call initialize_machine
     
-
-    ; https://forum.nasm.us/index.php?topic=1474.0 
-    push gdt.IA32_code_segment
-    push compatibility_mode
-    retfq
-    
-
-
-
-[BITS 32]
-compatibility_mode:
-
-    
-    mov eax, gdt.IA32_data_segment
-    mov ss, eax
-    mov ds, eax
-    mov es, eax
-    mov fs, eax
-	mov gs, eax
-
-
-    mov eax, cr0
-    and eax, ~(PAGING)
-    mov cr0, eax
-    
-    ; note that I stay with the same page tables
-
-    mov ecx, EFER_MSR          
-    rdmsr
-    and eax, ~LONG_MODE               
-    wrmsr
-
-    output_serial '.'
-    mov eax, cr0
-    or eax, PAGING
-    mov cr0, eax
-
-    output_serial '.'
-
-
-    push gdt.IA32_code_segment
-    push protected_mode
-    retfd ; jmp works for HyperWin
-
-    
-
-[BITS 32]
-protected_mode:
-
-    cli
-    ; paging must be identity mapped
-    mov eax, cr0
-    and eax, ~(PAGING)
-    mov cr0, eax
-
     hlt
+
+
+
+
+    ; ; https://forum.nasm.us/index.php?topic=1474.0 
+    ; push gdt.IA32_code_segment
+    ; push compatibility_mode
+    ; retfq
+    
+
+
+
+; [BITS 32]
+; compatibility_mode:
+
+;     mov eax, gdt.IA32_data_segment
+;     mov ss, eax
+;     mov ds, eax
+;     mov es, eax
+;     mov fs, eax
+; 	mov gs, eax
+
+
+;     mov eax, cr0
+;     and eax, ~(PAGING)
+;     mov cr0, eax
+    
+;     ; note that I stay with the same page tables
+;     mov eax, FREE_SPACE_OFFSET
+;     mov cr3, eax
+
+;     mov ecx, EFER_MSR          
+;     rdmsr
+;     and eax, ~LONG_MODE               
+;     wrmsr
+
+    
+;     output_serial '.'
+;     mov eax, cr0
+;     or eax, PAGING
+;     mov cr0, eax
+
+;     output_serial '.'
+
+
+;     push gdt.IA32_code_segment
+;     push protected_mode
+;     retfd ; jmp works for HyperWin
+
+    
+
+; [BITS 32]
+; protected_mode:
+
+;     cli
+;     ; paging must be identity mapped
+;     mov eax, cr0
+;     and eax, ~(PAGING)
+;     mov cr0, eax
+
+;     hlt
 
 
 ; [BITS 16]

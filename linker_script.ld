@@ -2,7 +2,7 @@
  ref https://sourceware.org/binutils/docs-2.30/ld/Simple-Example.html 
 */
 
-HEADER_START = 0x100000;
+HEADER_START = 0x000000;
 
 SECTIONS
 {
