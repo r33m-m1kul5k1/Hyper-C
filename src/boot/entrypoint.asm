@@ -55,7 +55,6 @@ global _start
 
 
 global _start
-global data_segment_end
 
 
 section .multiboot
@@ -152,13 +151,13 @@ section .text
     
     lgdt [gdt.pointer]
 
-    jmp gdt.code64:setup_hypervisor
+    jmp gdt.IA32e_code_segment:setup_hypervisor
 
 
 [BITS 64]
 setup_hypervisor:
 
-    mov rax, gdt.data
+    mov rax, gdt.data_segment
     mov ds, rax 
     mov es, rax 
     mov ss, rax
@@ -170,9 +169,9 @@ setup_hypervisor:
     
     call initialize_machine
     
-    hlt
+
     ; https://forum.nasm.us/index.php?topic=1474.0 
-    push gdt.code32
+    push gdt.IA32_code_segment
     push compatibility_mode
     retfq
     
@@ -183,7 +182,7 @@ setup_hypervisor:
 compatibility_mode:
 
     
-    mov eax, gdt.data32
+    mov eax, gdt.IA32_data_segment
     mov ss, eax
     mov ds, eax
     mov es, eax
@@ -210,7 +209,7 @@ compatibility_mode:
     output_serial '.'
 
 
-    push gdt.code32
+    push gdt.IA32_code_segment
     push protected_mode
     retfd ; jmp works for HyperWin
 
