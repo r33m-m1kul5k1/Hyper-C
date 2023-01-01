@@ -6,7 +6,9 @@ SECTIONS
   . = 0x0;
 
   /* take all text, data and bss sections */
-  .text : { *(.text) }
-  .data : { *(.data) }
-  .bss : { *(.bss) }
+  .multiboot :  { *(.multiboot) }
+  .text :       { *(.text) }
+  .data :       { *(.data) }
+  .rodata :     { *(.rodata) }
+  .bss :        { *(.bss) }
 }
