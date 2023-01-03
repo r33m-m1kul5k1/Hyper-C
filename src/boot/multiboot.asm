@@ -12,15 +12,15 @@ multiboot2_header_start:
     .length dd (multiboot2_header_end - multiboot2_header_start)
     .checksum dd -(MUTLIBOOT_MAGIC + I386 + (multiboot2_header_end - multiboot2_header_start))
 
-        ; address_tag_start:
-        ;     .type dw 2
-        ;     .flags dw 0
-        ;     .size dd address_tag_end - address_tag_start
-        ;     .header_addr dd HEADER_ADDRESS
-        ;     .load_addr dd -1    ; load .text after header
-        ;     .load_end_addr dd 0 ; text segment and data segment occupy the whole OS image
-        ;     .bss_end_addr dd 0  ; no bss segment
-        ; address_tag_end:
+        address_tag_start:
+            .type dw 2
+            .flags dw 0
+            .size dd address_tag_end - address_tag_start
+            .header_addr dd HEADER_ADDRESS
+            .load_addr dd -1    ; load .text after header
+            .load_end_addr dd 0 ; text segment and data segment occupy the whole OS image
+            .bss_end_addr dd 0  ; no bss segment
+        address_tag_end:
     
         entry_tag_start:
             .type dw 3 
