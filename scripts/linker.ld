@@ -1,5 +1,6 @@
 /*
- ref https://sourceware.org/binutils/docs-2.30/ld/Simple-Example.html 
+ref https://sourceware.org/binutils/docs-2.30/ld/Simple-Example.html
+https://wiki.osdev.org/Memory_Map_(x86) - free space (0x500 - 0x7FFFF) or above 0x100000
 */
 
 HEADER_START = 0x100000;

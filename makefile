@@ -3,7 +3,8 @@
 # --------------- LINKER --------------- #
 LINKER 			= ld
 LINKER_FLAGS    = -nostdlib \
-				  -T linker_script.ld \
+				  -T scripts/linker.ld \
+				  -M # prints the memory map
 
 
 # --------------- ASM COMPILER --------------- #
