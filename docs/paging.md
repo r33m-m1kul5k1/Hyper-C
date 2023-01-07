@@ -3,12 +3,12 @@
 ## Linear Address Translation
 
 note that each structure should be 4Kib aligned.\
-![](images/pml4-1G.png)
-![](images/pml4-2M.png)
+![structure](images/pml4-1G.png)
 
 ## CR3
-![](images/pml4-cr3.png)
+
+![cr3](images/pml4-cr3.png)
 
 ## Enable Paging
 
-![](images/enable-paging.png)
+![enable paging](images/enable-paging.png)

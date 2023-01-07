@@ -1,3 +1,3 @@
 # Operating Modes
 
-![](images/mode-switches.png)
+![modes](images/modes-transitions.png)
