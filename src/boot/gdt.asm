@@ -28,6 +28,15 @@ gdt:
 
     db 0x00           ; base 16-23
     db 0b10011010     ; P, DPL, S, E, DC, RW, A (access byte)
+    db 0b00000000     ; G, DB, L, Reserved (limit 19-16 & flags)
+    db 0x00           ; base 24-31
+
+.IA32e_data_segment: equ $ - gdt
+    dw 0xffff         ; limit 0-15
+    dw 0x0000         ; base 0-15
+
+    db 0x00           ; base 16-23
+    db 0b10010010     ; P, DPL, S, E, DC, RW, A (access byte)
     db 0b00001111     ; G, DB, L, Reserved (limit 19-16 & flags)
     db 0x00           ; base 24-31
 
@@ -40,13 +49,13 @@ gdt:
     db 0b01001111     ; G, DB, L, Reserved (limit 19-16 & flags)
     db 0x00           ; base 24-31
 
-.data_segment: equ $ - gdt
+.real_mode_data_segment: equ $ - gdt
     dw 0xffff         ; limit 0-15
     dw 0x0000         ; base 0-15
 
     db 0x00           ; base 16-23
     db 0b10010010     ; P, DPL, S, E, DC, RW, A (access byte)
-    db 0b00001111     ; G, DB, L, Reserved (limit 19-16 & flags)
+    db 0b00000000     ; G, DB, L, Reserved (limit 19-16 & flags)
     db 0x00           ; base 24-31
 
 .pointer:
@@ -55,4 +64,4 @@ gdt:
 
 ivt_pointer:
     dw 0x3ff
-    dd 0x0 ; the IVT location is 0x0000
+    dq 0x0 ; the IVT location is 0x0000

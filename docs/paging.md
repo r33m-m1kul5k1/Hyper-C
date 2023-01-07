@@ -3,7 +3,7 @@
 ## Linear Address Translation
 
 note that each structure should be 4Kib aligned.\
-![structure](images/pml4-1G.png)
+![structure](images/pdp-2M.png)
 
 ## CR3
 
