@@ -45,6 +45,17 @@ void sprint_integer(char *str, int number, int base)
         *str = '-';
         str++;
     }
+    
+    if (base == 2)
+    {
+        strcpy(str, "b");
+        str += strlen(str);
+    }
+    else if (base == 16)
+    {
+        strcpy(str, "0x");
+        str += strlen(str);
+    }
 
     char number_buffer[MAXIMUM_BINARY_LENGTH];
     number_buffer[MAXIMUM_BINARY_LENGTH] = '\0';
@@ -96,9 +107,6 @@ void vsprintf(char *str, const char *fmt, va_list args)
             break;
 
         case 'b':
-            strcpy(str, "b");
-            str += strlen(str);
-            
             number = va_arg(args, int);
             sprint_integer(str, number, 2);
             str += strlen(str);
@@ -106,9 +114,6 @@ void vsprintf(char *str, const char *fmt, va_list args)
             break;
 
         case 'x':
-            strcpy(str, "0x");
-            str += strlen(str);
-
             number = va_arg(args, int);
             sprint_integer(str, number, 16);
             str += strlen(str);
