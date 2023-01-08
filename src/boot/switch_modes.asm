@@ -4,6 +4,7 @@ extern enabling_paging_mode
 
 global protected_to_long
 global long_to_protected
+global protected_to_real
 
 %include "src/boot/macros.asm"
 %include "src/boot/gdt.asm"
@@ -88,25 +89,27 @@ protected_to_real:
     mov cr0, eax
 
     ; flush TLB
-    mov eax, 0
+    mov eax, 0x0
     mov cr3, eax
 
-    jmp gdt.real_mode_code_segment:protected_real_mode
-
-protected_real_mode:
-    setup_data_segments gdt.real_mode_data_segment
-    
-    lidt [ivt_pointer]
-
-    ; disable protection
-    mov eax, cr0
-    and eax, PROTECTION_ENABLE
-    mov cr0, eax
     hlt
+;    jmp gdt.real_mode_code_segment:protected_real_mode
+
+; [bits 16]
+; protected_real_mode:
+;     setup_data_segments gdt.real_mode_data_segment
+    
+;     lidt [ivt_pointer]
+
+;     ; disable protection
+;     mov eax, cr0
+;     and eax, ~(PROTECTION_ENABLE)
+;     mov cr0, eax
+;     hlt
 
 ;    jmp 0:real_mode
 
-; [bits 16]
+
 ; real_mode:
 ;     setup_data_segments 0x0
 ;     sti

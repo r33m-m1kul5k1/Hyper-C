@@ -4,7 +4,7 @@
 LINKER 			= ld
 LINKER_FLAGS    = -nostdlib \
 				  -T scripts/linker.ld \
-				  -M # prints the memory map
+				  #-M # prints the memory map
 
 
 # --------------- ASM COMPILER --------------- #
@@ -33,9 +33,11 @@ SRC_DIR = src
 BOOT_ASM_SOURCE_FILES		= $(addprefix boot/, $(shell find src/boot/ -maxdepth 1 -name '*.asm' -printf '%f '))
 VMM_C_SOURCE_FILES        	= $(addprefix vmm/, $(shell find src/vmm/ -maxdepth 1 -name '*.c' -printf '%f '))
 DRIVERS_C_SOURCE_FILES      = $(addprefix drivers/, $(shell find src/drivers/ -maxdepth 1 -name '*.c' -printf '%f '))
+LIB_C_SOURCE_FILES		= $(addprefix lib/, $(shell find src/lib/ -maxdepth 1 -name '*.c' -printf '%f '))
 
 OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(VMM_C_SOURCE_FILES:.c=.o)) \
 			   $(addprefix $(OBJECT_DIR)/,$(DRIVERS_C_SOURCE_FILES:.c=.o)) \
+			   $(addprefix $(OBJECT_DIR)/,$(LIB_C_SOURCE_FILES:.c=.o)) \
 			   $(addprefix $(OBJECT_DIR)/,$(BOOT_ASM_SOURCE_FILES:.asm=.o)) \
 
 
