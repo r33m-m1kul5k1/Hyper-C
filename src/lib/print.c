@@ -1,47 +1,15 @@
 #include "lib/print.h"
 #include "lib/log.h"
+#include "lib/utils.h"
 #include "drivers/serial.h"
 
 const char *HEX_DIGITS = "0123456789abcdef";
 
-void strcpy(char *dst, const char *src)
+char *add_number_prefix(char *str, int *number, int base)
 {
-    for (;*src != '\0'; src++, dst++)
+    if (*number < 0)
     {
-        *dst = *src;
-    }
-    *dst = '\0';
-}
-
-int strlen(const char *str)
-{
-    int length = 0;
-    while(str[length])
-        length++;
-
-    return length;
-}
-
-const char *get_number_start(const char *str)
-{
-    if (strlen(str) == 1)
-    {
-        return str;
-    }
-
-    while (*str == '0')
-    {
-        str++;
-    }
-
-    return str;
-}
-
-void sprint_integer(char *str, int number, int base)
-{
-    if (number < 0)
-    {
-        number *= -1;
+        *number *= -1;
         *str = '-';
         str++;
     }
@@ -56,6 +24,14 @@ void sprint_integer(char *str, int number, int base)
         strcpy(str, "0x");
         str += strlen(str);
     }
+
+    return str;
+}
+
+void sprint_integer(char *str, int number, int base)
+{
+    
+    str = add_number_prefix(str, &number, base);
 
     char number_buffer[MAXIMUM_BINARY_LENGTH];
     number_buffer[MAXIMUM_BINARY_LENGTH] = '\0';
