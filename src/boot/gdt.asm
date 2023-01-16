@@ -1,6 +1,6 @@
 ; https://wiki.osdev.org/Global_Descriptor_Table
 
-section .data
+;section .data
 
 gdt:
     dq 0
@@ -65,3 +65,4 @@ gdt:
 ivt_pointer:
     dw 0x3ff
     dq 0x0 ; the IVT location is 0x0000
+

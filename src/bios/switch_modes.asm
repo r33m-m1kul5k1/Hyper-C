@@ -4,12 +4,14 @@ extern enabling_paging_mode
 
 global protected_to_long
 global long_to_protected
-global protected_to_real
+
 
 %include "src/boot/macros.asm"
+
+section .real_mode
 %include "src/boot/gdt.asm"
 
-section .text
+
 ;------------------------------------------------------------------
 [bits 32]
 ; Jumps from protected mode to long mode.
@@ -74,8 +76,6 @@ compatibility_mode:
     ret
 ;------------------------------------------------------------------
     
-
-    
 ;------------------------------------------------------------------
 ; Jumps from protected mode to real mode.
 ; Returns the real mode stack pointer address
@@ -92,27 +92,30 @@ protected_to_real:
     mov eax, 0x0
     mov cr3, eax
 
+
     hlt
-;    jmp gdt.real_mode_code_segment:protected_real_mode
-
-; [bits 16]
-; protected_real_mode:
-;     setup_data_segments gdt.real_mode_data_segment
+    jmp gdt.real_mode_code_segment:0 ;protected_real_mode
+ 
+[bits 16]
+protected_real_mode:
+    setup_data_segments gdt.real_mode_data_segment
     
-;     lidt [ivt_pointer]
+    
+    lidt [0];[ivt_pointer]
 
-;     ; disable protection
-;     mov eax, cr0
-;     and eax, ~(PROTECTION_ENABLE)
-;     mov cr0, eax
-;     hlt
+    ; disable protection
+    mov eax, cr0
+    and eax, ~(PROTECTION_ENABLE)
+    mov cr0, eax
+    hlt
 
-;    jmp 0:real_mode
+  jmp 0:0;real_mode
 
 
-; real_mode:
-;     setup_data_segments 0x0
-;     sti
-;     mov ax, LOWER_STACK
-;     ret
-;------------------------------------------------------------------
+real_mode:
+    setup_data_segments 0x0
+    sti
+    mov ax, LOWER_STACK
+    ret
+; ;------------------------------------------------------------------
+    

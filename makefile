@@ -24,7 +24,7 @@ C_FLAGS = -c \
 		  -mno-red-zone \
 		  -I ./include
 # ---------------------------------------------- #
-SHELL = /bin/zsh
+
 OBJECT_DIR = build
 # /iso/boot/grub is a folder to configure grub
 GRUB_DIR = $(OBJECT_DIR)/iso/boot

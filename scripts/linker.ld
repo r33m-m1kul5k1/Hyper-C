@@ -18,4 +18,7 @@ SECTIONS
   .multiboot :  { *(.multiboot) }
   .text :       { *(.text) }
   .data :       { *(.data) }
+  .bss :        { *(.bss) }  
+  .rodata :     { *(.rodata) }
+  .real_mode :  { *(.real_mode) }
 }
