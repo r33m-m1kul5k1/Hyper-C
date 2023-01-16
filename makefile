@@ -24,26 +24,27 @@ C_FLAGS = -c \
 		  -mno-red-zone \
 		  -I ./include
 # ---------------------------------------------- #
-
+SHELL = /bin/zsh
 OBJECT_DIR = build
 # /iso/boot/grub is a folder to configure grub
 GRUB_DIR = $(OBJECT_DIR)/iso/boot
 SRC_DIR = src
 
-BOOT_ASM_SOURCE_FILES		= $(addprefix boot/, $(shell find src/boot/ -maxdepth 1 -name '*.asm' -printf '%f '))
-VMM_C_SOURCE_FILES        	= $(addprefix vmm/, $(shell find src/vmm/ -maxdepth 1 -name '*.c' -printf '%f '))
-DRIVERS_C_SOURCE_FILES      = $(addprefix drivers/, $(shell find src/drivers/ -maxdepth 1 -name '*.c' -printf '%f '))
-LIB_C_SOURCE_FILES		= $(addprefix lib/, $(shell find src/lib/ -maxdepth 1 -name '*.c' -printf '%f '))
+C_SRC_FILES = $(wildcard src/*/*.c)
+ASM_SRC_FILES = $(wildcard src/*/*.asm)
 
-OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(VMM_C_SOURCE_FILES:.c=.o)) \
-			   $(addprefix $(OBJECT_DIR)/,$(DRIVERS_C_SOURCE_FILES:.c=.o)) \
-			   $(addprefix $(OBJECT_DIR)/,$(LIB_C_SOURCE_FILES:.c=.o)) \
-			   $(addprefix $(OBJECT_DIR)/,$(BOOT_ASM_SOURCE_FILES:.asm=.o)) \
+C_FILES = $(C_SRC_FILES:src/%=%)
+ASM_FILES = $(ASM_SRC_FILES:src/%=%)
+
+
+OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(C_FILES:.c=.o)) \
+			    $(addprefix $(OBJECT_DIR)/,$(ASM_FILES:.asm=.o)) \
 
 
 .PHONY : clean
 
 all : hypervisor.iso
+
 
 # make iso
 hypervisor.iso : $(GRUB_DIR)/hypervisor
