@@ -1,8 +1,8 @@
-
-#ifndef INSTRUCTIONS_H
-#define INSTRUCTIONS_H
+#pragma once
 
 #include "types.h"
+
+// https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html
 
 /* 
 Inline improves performance by copy and pasts the function contents
@@ -16,11 +16,3 @@ void inline __out(DWORD port, BYTE data)
     */ 
     asm volatile("out %1, %0" :: "d" (port), "a" (data));
 }
-
-__attribute((always_inline))
-void inline __rep_movsb(DWORD src, DWORD dst, DWORD size)
-{
-    //asm volatile("rep movsb");
-}
-
-#endif

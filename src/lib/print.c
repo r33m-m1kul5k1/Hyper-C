@@ -54,7 +54,7 @@ void sprintf(char *str, const char *fmt, ...)
 
 void vsprintf(char *str, const char *fmt, va_list args)
 {
-    char *buffer;
+    char *buffer, c;
     int number;
 
     for (;*fmt != '\0'; fmt++)
@@ -69,11 +69,18 @@ void vsprintf(char *str, const char *fmt, va_list args)
         fmt++;
         switch (*fmt)
         {
+        
+        case 'c':
+            log_debug("printing a character");
+            c = (char)va_arg(args, int);
+            *str = c;
+            str++;
+            break;
+
         case 's':
             buffer = va_arg(args, char*);
             strcpy(str, buffer);
             str += strlen(str);
-
             break;
 
         case 'd':
