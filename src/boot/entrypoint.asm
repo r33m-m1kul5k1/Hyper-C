@@ -1,21 +1,26 @@
 
 global _start
 extern initialize_vmm
-extern protected_to_long
-extern long_to_protected
-extern protected_to_real
+
+global real_mode_start
+global real_mode_end
 
 section .text
 
+%include "src/boot/macros.asm"
+%include "src/boot/paging.asm"
+%include "src/bios/real_mode.asm"
+
+
 [bits 32]
 _start:
-    hlt
-;     call protected_to_long
 
-; [bits 64]
-;     mov rsp, rax
+    call protected_to_long
 
-;     call initialize_vmm
+[bits 64]
+    mov rsp, rax
+
+    call initialize_vmm
 
 ;     call long_to_protected
 ; [bits 32]
@@ -25,3 +30,8 @@ _start:
     ; mov sp, ax
 
     hlt
+
+section .multiboot
+%include "src/boot/multiboot.asm"
+section .data
+%include "src/boot/gdt.asm"

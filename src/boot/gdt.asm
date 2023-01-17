@@ -1,6 +1,5 @@
 ; https://wiki.osdev.org/Global_Descriptor_Table
 
-;section .data
 
 gdt:
     dq 0

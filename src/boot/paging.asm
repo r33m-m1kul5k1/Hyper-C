@@ -1,9 +1,4 @@
 
-%include "src/boot/macros.asm"
-global setup_pml4_map
-global enabling_paging_mode
-
-section .text
 [bits 32]
 ; Creates multiple paging tables
 ; Param:

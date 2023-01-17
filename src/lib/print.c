@@ -30,15 +30,16 @@ char *add_number_prefix(char *str, int *number, int base)
 
 void sprint_integer(char *str, int number, int base)
 {
-    
-    str = add_number_prefix(str, &number, base);
-
+    int value = number;
     char number_buffer[MAXIMUM_BINARY_LENGTH];
     number_buffer[MAXIMUM_BINARY_LENGTH] = '\0';
+
+    str = add_number_prefix(str, &value, base);
+
     for (int i = MAXIMUM_BINARY_LENGTH - 1; i >= 0; i--)
     {
-        number_buffer[i] = HEX_DIGITS[number % base];
-        number = number / base;
+        number_buffer[i] = HEX_DIGITS[value % base];
+        value = value / base;
     }
 
     strcpy(str, get_number_start(number_buffer));
@@ -97,11 +98,16 @@ void vsprintf(char *str, const char *fmt, va_list args)
             break;
 
         case 'x':
+            hex_print:
             number = va_arg(args, int);
             sprint_integer(str, number, 16);
             str += strlen(str);
             break;
 
+        case 'p':
+            goto hex_print;
+            break;
+            
         default:
             log_error("unknown format character");
             break;

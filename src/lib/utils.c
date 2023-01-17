@@ -1,4 +1,19 @@
 #include "lib/utils.h"
+#define MAXIMUM_BINARY_LENGTH 64
+
+int strcmp(const char *str1, const char *str2)
+{
+    if (strlen(str1) != strlen(str2))
+        return *str1 - *str2;
+
+    for (;*str1 != '\0'; str1++, str2++)
+    {
+        if (*str1 != *str2)
+            return *str1 - *str2;
+    }
+
+    return 0;
+}
 
 void strcpy(char *dst, const char *src)
 {
@@ -31,9 +46,10 @@ void* memcpy( void *dst, const void *src, size_t count )
 
 const char *get_number_start(const char *str)
 {
-    if (strlen(str) == 1)
+    
+    if (str[MAXIMUM_BINARY_LENGTH -1] == '0')
     {
-        return str;
+        return "0";
     }
 
     while (*str == '0')

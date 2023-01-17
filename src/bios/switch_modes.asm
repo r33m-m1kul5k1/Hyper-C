@@ -1,15 +1,6 @@
 
-extern setup_pml4_map
-extern enabling_paging_mode
-
-global protected_to_long
-global long_to_protected
 
 
-%include "src/boot/macros.asm"
-
-section .real_mode
-%include "src/boot/gdt.asm"
 
 
 ;------------------------------------------------------------------
