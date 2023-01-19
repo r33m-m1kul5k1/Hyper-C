@@ -9,13 +9,18 @@
 %define PAGE_LENGTH 0x1_000
 %define MEMORY_SIZE 2
 %define LARGE_PAGE_SIZE (1 << 21)
+%define HV_BASE_ADDRESS 0x100000
+%define REAL_MODE_BASE_ADDRESS 0x7E00
+%define REAL_MODE_RELOCATION(addr) addr - HV_BASE_ADDRESS + REAL_MODE_BASE_ADDRESS
 
 ; after 20 Kib of .text section
 %define PML4_ADDRESS 0x5000
 %define PDP_ADDRESS PML4_ADDRESS + 0x1000
 %define PD_ADDRESS PDP_ADDRESS + (0x1000 * MEMORY_SIZE)
 %define HIGHER_STACK PD_ADDRESS + 0x1000
-%define LOWER_STACK 0x500
+%define LOWER_STACK REAL_MODE_RELOCATION(0x500)
+
+
 ;----------------------------------------------------
 
 ;-----------------------MSRs-------------------------

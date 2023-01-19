@@ -1,9 +1,10 @@
 
 global _start
-extern initialize_vmm
-
 global real_mode_start
 global real_mode_end
+
+extern initialize_vmm
+
 
 section .text
 

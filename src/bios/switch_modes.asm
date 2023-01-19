@@ -1,7 +1,7 @@
 
-
-
-
+ivt_pointer:
+    dw 0x3ff
+    dq 0x0 ; the IVT location is 0x0000
 
 ;------------------------------------------------------------------
 [bits 32]
@@ -85,14 +85,14 @@ protected_to_real:
 
 
     hlt
-    jmp gdt.real_mode_code_segment:0 ;protected_real_mode
+    jmp gdt.real_mode_code_segment:REAL_MODE_RELOCATION(protected_real_mode)
  
 [bits 16]
 protected_real_mode:
     setup_data_segments gdt.real_mode_data_segment
     
     
-    lidt [0];[ivt_pointer]
+    lidt [REAL_MODE_RELOCATION(ivt_pointer)]
 
     ; disable protection
     mov eax, cr0
@@ -100,7 +100,7 @@ protected_real_mode:
     mov cr0, eax
     hlt
 
-  jmp 0:0;real_mode
+  jmp 0:REAL_MODE_RELOCATION(real_mode)
 
 
 real_mode:

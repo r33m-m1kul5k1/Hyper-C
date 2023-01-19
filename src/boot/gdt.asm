@@ -61,7 +61,5 @@ gdt:
     dw .pointer - gdt - 1 ; limit (the size of our gdt) 
     dq gdt
 
-ivt_pointer:
-    dw 0x3ff
-    dq 0x0 ; the IVT location is 0x0000
+
 

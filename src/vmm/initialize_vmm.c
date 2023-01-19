@@ -1,19 +1,18 @@
 #include "lib/utils.h"
 #include "lib/log.h"
-#include "drivers/serial.h"
 
-extern int real_mode_start;
-extern int real_mode_end;
+#define REAL_MODE_BASE_ADDRESS 0x7E00
+
+extern void real_mode_start();
+extern void real_mode_end();
 
 void initialize_vmm()
 {
     set_log_level(DEBUG_LEVEL);
-    int* a = 0;
-    int b = 240;
-    a = &b;
     
     log_info("initializing machine");
-    log_info("test %p", a);
-    log_info("real mode code starts at: %p", real_mode_start);
-    log_info("real mode code ends at: %p", real_mode_end);
+
+    log_info("relocating real mode code from [%p - %p] to the 'low memory' at %x", real_mode_start, real_mode_end, REAL_MODE_BASE_ADDRESS);
+    //memcpy(REAL_MODE_BASE_ADDRESS, real_mode_start, real_mode_end - real_mode_start)
+    
 }
