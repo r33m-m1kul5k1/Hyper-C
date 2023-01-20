@@ -44,14 +44,9 @@ void* memcpy( void *dst, const void *src, size_t count )
     return dst;
 }
 
+// Remove leading zeros, note that the number must be positive.
 const char *get_number_start(const char *str)
 {
-    
-    if (str[MAXIMUM_BINARY_LENGTH -1] == '0')
-    {
-        return "0";
-    }
-
     while (*str == '0')
     {
         str++;

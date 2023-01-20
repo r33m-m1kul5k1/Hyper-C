@@ -23,16 +23,18 @@ _start:
 
     call initialize_vmm
 
-;     call long_to_protected
-; [bits 32]
-;     mov esp, eax
+    call long_to_protected
+[bits 32]
+    mov esp, eax
 
-    ; call protected_to_real
-    ; mov sp, ax
+    call protected_to_real
+[bits 16]
+    mov sp, ax
 
     hlt
 
 section .multiboot
 %include "src/boot/multiboot.asm"
+
 section .data
 %include "src/boot/gdt.asm"

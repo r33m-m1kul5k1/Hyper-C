@@ -33,6 +33,7 @@ void sprint_integer(char *str, int number, int base)
     int value = number;
     char number_buffer[MAXIMUM_BINARY_LENGTH];
     number_buffer[MAXIMUM_BINARY_LENGTH] = '\0';
+    
 
     str = add_number_prefix(str, &value, base);
 
@@ -42,7 +43,10 @@ void sprint_integer(char *str, int number, int base)
         value = value / base;
     }
 
-    strcpy(str, get_number_start(number_buffer));
+    if (number == 0)
+        strcpy(str, "0");
+    else
+        strcpy(str, get_number_start(number_buffer));
 }
 
 void sprintf(char *str, const char *fmt, ...)
