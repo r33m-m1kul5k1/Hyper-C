@@ -9,9 +9,6 @@ HEADER_START = 0x100000;
 SECTIONS
 {
   /* location counter offset */
-  /* . = 0x7E00;
-  .real_mode_address_space : { *(.real_mode_address_space) } */
-
   . = HEADER_START;
 
   /* take all text, data and bss sections */
@@ -20,5 +17,3 @@ SECTIONS
   .data :       { *(.data) }
   .bss :        { *(.bss) }  
   .rodata :     { *(.rodata) }
-  .real_mode :  { *(.real_mode) }
-}
