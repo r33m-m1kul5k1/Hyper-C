@@ -23,15 +23,8 @@ _start:
 
     call initialize_vmm
 
-    call long_to_protected
-[bits 32]
-    mov esp, eax
 
-    call protected_to_real
-[bits 16]
-    mov sp, ax
-
-    hlt
+    call REAL_MODE_RELOCATION(real_mode_callback)
 
 section .multiboot
 %include "src/boot/multiboot.asm"

@@ -11,7 +11,8 @@
 %define LARGE_PAGE_SIZE (1 << 21)
 %define HV_BASE_ADDRESS 0x100000
 %define REAL_MODE_BASE_ADDRESS 0x7E00
-%define REAL_MODE_RELOCATION(addr) addr - HV_BASE_ADDRESS + REAL_MODE_BASE_ADDRESS
+; offset inside the real mode code + base
+%define REAL_MODE_RELOCATION(addr) addr - real_mode_start + REAL_MODE_BASE_ADDRESS
 
 ; after 20 Kib of .text section
 %define PML4_ADDRESS 0x5000
