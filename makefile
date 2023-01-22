@@ -43,7 +43,7 @@ OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(C_FILES:.c=.o)) \
 
 .PHONY : clean
 
-all : hypervisor.iso
+all : hypervisor.iso 
 
 
 # make iso
@@ -55,7 +55,6 @@ $(GRUB_DIR)/hypervisor : $(OBJECT_FILES)
 	$(LINKER) $(LINKER_FLAGS) -o $@ $^
 
 # C
-
 $(OBJECT_DIR)/%.o : $(SRC_DIR)/%.c
 	$(C_COMPILER) $(C_FLAGS) -o $@ $^
 

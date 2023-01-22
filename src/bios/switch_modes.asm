@@ -1,29 +1,62 @@
 
-[bits 64]
-; Calls a real mode function
-real_mode_callback:
 
+;------------------------------------------------------------------
+; Calls a real mode function
+; di - points to the real mode function
+[bits 64]
+call_real_mode_function:
+    mov rbp, rsp ; saves the return address inside rbp
     call long_to_protected
 [bits 32]
     mov esp, eax
     
     call protected_to_real
+
 [bits 16]
     mov sp, ax
 
-    mov ax, 0
-    int 0x10 
+    call di ; function pointer
+    call real_to_protected
 
-    mov ah, 0x0e    ; function number = 0Eh : Display Character
-    mov al, '!'     ; AL = code of character to display
-    int 0x10
-    hlt
+[bits 32]
+    mov esp, eax
+    call protected_to_long
+
+[bits 64]
+    mov rsp, rbp
+
+    ret
+;------------------------------------------------------------------
 
 
 
-ivt_pointer:
-    dw 0x3ff
-    dq 0x0 ; the IVT location is 0x0000
+;------------------------------------------------------------------
+[bits 16]
+; Jumps from real mode to protected mode
+; Returns the new stack inside eax
+real_to_protected:
+
+    cli
+    
+    lgdt [REAL_MODE_RELOCATION(gdt.pointer)]
+
+    ; enable protection
+    mov eax, cr0
+    or eax, (PROTECTION_ENABLE)
+    mov cr0, eax
+    jmp gdt.IA32_code_segment:REAL_MODE_RELOCATION(protected_mode)
+
+[bits 32]
+protected_mode:
+    setup_data_segments gdt.IA32_data_segment
+
+    
+    ; Note that I don't initialize an IDT
+    mov eax, HIGHER_STACK
+    ret
+
+;------------------------------------------------------------------
+    
 
 ;------------------------------------------------------------------
 [bits 32]
@@ -127,5 +160,9 @@ real_mode:
     sti
     mov ax, LOWER_STACK
     ret 2 
-; ;------------------------------------------------------------------
-    
+;------------------------------------------------------------------
+
+ivt_pointer:
+    dw 0x3ff
+    dq 0x0 ; the IVT location is 0x0000
+

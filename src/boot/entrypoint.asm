@@ -7,10 +7,7 @@ extern initialize_vmm
 
 
 section .text
-
 %include "src/boot/macros.asm"
-%include "src/boot/paging.asm"
-%include "src/bios/real_mode.asm"
 
 
 [bits 32]
@@ -23,11 +20,14 @@ _start:
 
     call initialize_vmm
 
+    mov rdi, real_mode_smile
+    call real_mode_callback
 
-    call REAL_MODE_RELOCATION(real_mode_callback)
+
+
+
+%include "src/bios/real_mode.asm"
+%include "src/boot/paging.asm"
 
 section .multiboot
 %include "src/boot/multiboot.asm"
-
-section .data
-%include "src/boot/gdt.asm"
