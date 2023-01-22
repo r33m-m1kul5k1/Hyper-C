@@ -22,8 +22,9 @@ _start:
 
     mov rdi, real_mode_smile
     call real_mode_callback
-
-
+return_from_callback:
+    mov rdi, real_mode_smile
+    call real_mode_callback
 
 
 %include "src/bios/real_mode.asm"

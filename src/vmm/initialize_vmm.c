@@ -12,7 +12,8 @@ void initialize_vmm()
     
     log_info("initializing machine");
     log_info("relocating real mode code from [%p - %p] to the 'low memory' at %x", real_mode_start, real_mode_end, REAL_MODE_BASE_ADDRESS);
- 
+
+    // initialize real mode functions
     memcpy(
         (void*)REAL_MODE_BASE_ADDRESS,
         (void*)real_mode_start, 
