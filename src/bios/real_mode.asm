@@ -18,6 +18,7 @@ real_mode_callback:
 ;----------------------------------------------------
 
 %include "src/boot/gdt.asm"
+%include "src/boot/paging.asm"
 %include "src/bios/switch_modes.asm"
 %include "src/bios/vga.asm"
 %include "src/bios/ata.asm"

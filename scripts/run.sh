@@ -13,4 +13,4 @@ qemu-system-x86_64 -boot d -cdrom $PROJECT_DIR/hypervisor.iso \
 -chardev stdio,mux=on,id=char0 \
 -mon chardev=char0,mode=readline \
 -serial chardev:char0 \
--drive file=$PROJECT_DIR/bootimage-CrabOS.bin,format=raw,media=cdrom \
+-hda $PROJECT_DIR/bootimage-CrabOS.bin \

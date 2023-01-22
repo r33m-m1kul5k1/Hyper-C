@@ -10,7 +10,8 @@
 %define MEMORY_SIZE 2
 %define LARGE_PAGE_SIZE (1 << 21)
 %define HV_BASE_ADDRESS 0x100000
-%define REAL_MODE_BASE_ADDRESS 0x7E00
+; 0x7e00 - 0x7FFFF
+%define REAL_MODE_BASE_ADDRESS 0x7E00 
 ; offset inside the real mode code + base
 %define REAL_MODE_RELOCATION(addr) addr - real_mode_start + REAL_MODE_BASE_ADDRESS
 

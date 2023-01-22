@@ -5,26 +5,19 @@
 ; di - points to the real mode function
 [bits 64]
 call_real_mode_function:
-    mov rbp, rsp ; saves the return address inside rbp
+
     call long_to_protected
 [bits 32]
-    mov esp, eax
-    
     call protected_to_real
-
 [bits 16]
-    mov sp, ax
-
     call di ; function pointer
+before_wrapping:
     call real_to_protected
-
 [bits 32]
-    mov esp, eax
+inside_protected:
     call protected_to_long
-
 [bits 64]
-    mov rsp, rbp
-
+got_to_return:
     ret
 ;------------------------------------------------------------------
 
@@ -36,6 +29,7 @@ call_real_mode_function:
 ; Returns the new stack inside eax
 real_to_protected:
 
+    pop di
     cli
     
     lgdt [REAL_MODE_RELOCATION(gdt.pointer)]
@@ -53,6 +47,7 @@ protected_mode:
     
     ; Note that I don't initialize an IDT
     mov eax, HIGHER_STACK
+    push edi
     ret
 
 ;------------------------------------------------------------------
@@ -64,6 +59,7 @@ protected_mode:
 ; Returns the long mode stack pointer address
 protected_to_long:
 
+    pop esi
     call setup_pml4_map
     call enabling_paging_mode
 
@@ -75,6 +71,7 @@ protected_to_long:
 long_mode:
     setup_data_segments gdt.IA32e_data_segment
     mov rax, HIGHER_STACK
+    push rsi
     ret
 ;------------------------------------------------------------------
 
@@ -118,7 +115,7 @@ compatibility_mode:
     ; I don't do it because it does not effects the current state of the segment registers
     mov eax, HIGHER_STACK
     
-    ret
+    ret ; no need to go back 2 bytes because of `push edx`
 ;------------------------------------------------------------------
     
 ;------------------------------------------------------------------

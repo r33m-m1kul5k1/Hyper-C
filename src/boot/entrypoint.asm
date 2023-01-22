@@ -20,15 +20,15 @@ _start:
 
     call initialize_vmm
 
-    mov rdi, real_mode_smile
+    mov rdi, initialize_vga
     call real_mode_callback
-return_from_callback:
-    mov rdi, real_mode_smile
-    call real_mode_callback
+
+    hlt
+
+    
 
 
 %include "src/bios/real_mode.asm"
-%include "src/boot/paging.asm"
 
 section .multiboot
 %include "src/boot/multiboot.asm"
