@@ -7,10 +7,10 @@
 call_real_mode_function:
     call long_to_protected
 [bits 32]
-    call protected_to_real
+    call REAL_MODE_RELOCATION(protected_to_real)
 [bits 16]
     call di ; function pointer
-    call real_to_protected
+    call REAL_MODE_RELOCATION(real_to_protected)
 [bits 32]
     call protected_to_long
 [bits 64]
@@ -66,7 +66,7 @@ protected_to_long:
 [bits 64]
 long_mode:
     setup_data_segments gdt.IA32e_data_segment
-    and rsi 0xFFFFFFFF ; safty reasons
+    and rsi, 0xFFFFFFFF ; safty reasons
     mov rax, HIGHER_STACK
     push rsi
     ret
