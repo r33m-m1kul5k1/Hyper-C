@@ -5,19 +5,15 @@
 ; di - points to the real mode function
 [bits 64]
 call_real_mode_function:
-
     call long_to_protected
 [bits 32]
     call protected_to_real
 [bits 16]
     call di ; function pointer
-before_wrapping:
     call real_to_protected
 [bits 32]
-inside_protected:
     call protected_to_long
 [bits 64]
-got_to_return:
     ret
 ;------------------------------------------------------------------
 
@@ -44,7 +40,7 @@ real_to_protected:
 protected_mode:
     setup_data_segments gdt.IA32_data_segment
 
-    
+    and edi, 0xFFFF
     ; Note that I don't initialize an IDT
     mov eax, HIGHER_STACK
     push edi
@@ -70,6 +66,7 @@ protected_to_long:
 [bits 64]
 long_mode:
     setup_data_segments gdt.IA32e_data_segment
+    and rsi 0xFFFFFFFF ; safty reasons
     mov rax, HIGHER_STACK
     push rsi
     ret
@@ -82,7 +79,6 @@ long_mode:
 [bits 64]
 long_to_protected:
     ; https://forum.nasm.us/index.php?topic=1474.0
-    pop rdx ; saves ip 
     push gdt.IA32_code_segment
     push compatibility_mode
     retfq
@@ -91,7 +87,6 @@ long_to_protected:
 [bits 32]
 compatibility_mode:
 
-    push edx ; puts the ip on the stack
     setup_data_segments gdt.IA32_data_segment
     
     mov eax, cr0
@@ -115,7 +110,7 @@ compatibility_mode:
     ; I don't do it because it does not effects the current state of the segment registers
     mov eax, HIGHER_STACK
     
-    ret ; no need to go back 2 bytes because of `push edx`
+    ret 2
 ;------------------------------------------------------------------
     
 ;------------------------------------------------------------------
