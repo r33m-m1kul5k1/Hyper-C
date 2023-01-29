@@ -5,14 +5,14 @@
 ; di - points to the real mode function
 [bits 64]
 call_real_mode_function:
-    call long_to_protected
+    call REAL_MODE_RELOCATION(long_to_protected)
 [bits 32]
     call REAL_MODE_RELOCATION(protected_to_real)
 [bits 16]
     call di ; function pointer
     call REAL_MODE_RELOCATION(real_to_protected)
 [bits 32]
-    call protected_to_long
+    call REAL_MODE_RELOCATION(protected_to_long)
 [bits 64]
     ret
 ;------------------------------------------------------------------
@@ -20,9 +20,9 @@ call_real_mode_function:
 
 
 ;------------------------------------------------------------------
-[bits 16]
 ; Jumps from real mode to protected mode
 ; Returns the new stack inside eax
+[bits 16]
 real_to_protected:
 
     pop di
@@ -50,18 +50,18 @@ protected_mode:
     
 
 ;------------------------------------------------------------------
-[bits 32]
 ; Jumps from protected mode to long mode.
 ; Returns the long mode stack pointer address
+[bits 32]
 protected_to_long:
 
     pop esi
-    call setup_pml4_map
-    call enabling_paging_mode
+    call REAL_MODE_RELOCATION(setup_pml4_map)
+    call REAL_MODE_RELOCATION(enabling_paging_mode)
 
     lgdt [gdt.pointer]
     
-    jmp gdt.IA32e_code_segment:long_mode
+    jmp gdt.IA32e_code_segment:REAL_MODE_RELOCATION(long_mode)
 
 [bits 64]
 long_mode:
@@ -72,6 +72,28 @@ long_mode:
     ret
 ;------------------------------------------------------------------
 
+;------------------------------------------------------------------
+; Jumps from protected mode to long mode inside the "higher memory".
+; Returns the long mode stack pointer address
+[bits 32]
+protected_to_long_higher_memory:
+
+    pop esi
+    call setup_pml4_map
+    call enabling_paging_mode
+
+    lgdt [gdt.pointer]
+    
+    jmp gdt.IA32e_code_segment:protected_to_long_higher_memory.long_mode
+
+[bits 64]
+.long_mode:
+    setup_data_segments gdt.IA32e_data_segment
+    and rsi, 0xFFFFFFFF ; safty reasons
+    mov rax, HIGHER_STACK
+    push rsi
+    ret
+;------------------------------------------------------------------
 
 ;------------------------------------------------------------------
 ; Jumps from long mode to protected mode.
@@ -80,7 +102,7 @@ long_mode:
 long_to_protected:
     ; https://forum.nasm.us/index.php?topic=1474.0
     push gdt.IA32_code_segment
-    push compatibility_mode
+    push REAL_MODE_RELOCATION(compatibility_mode)
     retfq
 
 

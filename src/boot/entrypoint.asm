@@ -13,7 +13,7 @@ section .text
 [bits 32]
 _start:
 
-    call protected_to_long
+    call protected_to_long_higher_memory
 
 [bits 64]
     mov rsp, rax
@@ -21,6 +21,9 @@ _start:
     call initialize_vmm
 
     mov rdi, initialize_vga
+    call real_mode_callback
+
+    mov rdi, real_mode_smile
     call real_mode_callback
 
     hlt
