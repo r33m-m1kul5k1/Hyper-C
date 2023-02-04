@@ -3,14 +3,13 @@
 
 SCRIPT_DIR=$(cd -- $(dirname ${BASH_SOURCE[0]}) &> /dev/null && pwd)
 PROJECT_DIR=$SCRIPT_DIR/..
+BUILD_DIR=$PROJECT_DIR/build
 
-echo $PROJECT_DIR
 make -C $PROJECT_DIR
 
-echo $(file $PROJECT_DIR/hypervisor.iso)
-
-qemu-system-x86_64 -boot d -cdrom $PROJECT_DIR/hypervisor.iso \
+qemu-system-x86_64 -boot d -cdrom $BUILD_DIR/hypervisor.iso \
 -chardev stdio,mux=on,id=char0 \
 -mon chardev=char0,mode=readline \
 -serial chardev:char0 \
-#-drive file=$PROJECT_DIR/bootimage-CrabOS.bin,format=raw,media=cdrom \
+-m 2G \
+-drive file=$BUILD_DIR/bootimage-CrabOS.bin,format=raw,media=cdrom \

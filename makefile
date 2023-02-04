@@ -43,11 +43,11 @@ OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(C_FILES:.c=.o)) \
 
 .PHONY : clean
 
-all : hypervisor.iso 
+all : $(OBJECT_DIR)/hypervisor.iso 
 
 
 # make iso
-hypervisor.iso : $(GRUB_DIR)/hypervisor
+$(OBJECT_DIR)/hypervisor.iso : $(GRUB_DIR)/hypervisor
 	grub-mkrescue -o $@ $(OBJECT_DIR)/iso
 
 # link
