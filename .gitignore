@@ -1,4 +1,5 @@
-build
-!build/iso/boot/grub/grub.cfg
-
+*.o
+*.bin
+*.iso
+hypervisor
 .vscode
