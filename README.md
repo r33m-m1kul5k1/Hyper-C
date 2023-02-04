@@ -4,7 +4,14 @@ a native hypervisor for [CrabOS](https://github.com/r33m-m1kul5k1/CrabOS) and Wi
 
 ## Build & Run
 ```bash
-./run.sh
+./scripts/run.sh
+```
+### debug
+```bash
+mkdir ~/.config/gdb/ && echo "set auto-load safe-path /" > ~/.config/gdb/gdbinit
+./scripts/debug.sh
+
+gdb <the file you want to debug>
 ```
 
 ## Resources

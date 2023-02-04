@@ -1,6 +1,11 @@
 {
-    "C_Cpp.errorSquiggles": "Disabled",
+    "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "system_error": "cpp"
+        "stddef.h": "c",
+        "utils.h": "c",
+        "serial.h": "c",
+        "log.h": "c",
+        "print.h": "c",
+        "stdarg.h": "c"
     }
 }
