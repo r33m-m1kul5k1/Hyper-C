@@ -50,28 +50,3 @@ setup_pml4_map:
     call _create_tables
 
 ret 
-
-enabling_paging_mode:
-    ; disable previous paging
-    mov eax, cr0
-    and eax, ~PAGING
-    mov cr0, eax
-    
-    ; enable PAE
-    mov eax, cr4
-    or eax, PAE 
-    mov cr4, eax
-
-    ; initialize PML4 pointer
-    mov eax, PML4_ADDRESS
-    mov cr3, eax
-
-    mov ecx, EFER_MSR          
-    rdmsr
-    or eax, LONG_MODE               
-    wrmsr
-    
-    mov eax, cr0
-    or eax, PAGING
-    mov cr0, eax
-ret

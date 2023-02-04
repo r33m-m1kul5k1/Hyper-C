@@ -5,27 +5,19 @@
 ; di - points to the real mode function
 [bits 64]
 call_real_mode_function:
-    mov rbp, rsp ; saves the return address inside rbp
     call long_to_protected
-[bits 32]
-    mov esp, eax
-    
+
+[bits 32]    
     call protected_to_real
 
 [bits 16]
-    mov sp, ax
-
     call di ; function pointer
-called_callback:
     call real_to_protected
 
 [bits 32]
-    mov esp, eax
     call protected_to_long
-
 [bits 64]
-    mov rsp, rbp
-
+before_ret:
     ret
 ;------------------------------------------------------------------
 
@@ -67,8 +59,29 @@ protected_mode:
 protected_to_long:
 
     pop esi
-    call setup_pml4_map
-    call enabling_paging_mode
+    
+    ; disable previous paging
+    mov eax, cr0
+    and eax, ~PAGING
+    mov cr0, eax
+    
+    ; enable PAE
+    mov eax, cr4
+    or eax, PAE 
+    mov cr4, eax
+
+    ; initialize PML4 pointer
+    mov eax, PML4_ADDRESS
+    mov cr3, eax
+
+    mov ecx, EFER_MSR          
+    rdmsr
+    or eax, LONG_MODE               
+    wrmsr
+    
+    mov eax, cr0
+    or eax, PAGING
+    mov cr0, eax
 
 
     jmp gdt.IA32e_code_segment:long_mode

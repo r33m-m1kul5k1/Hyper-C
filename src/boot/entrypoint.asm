@@ -17,6 +17,7 @@ section .text
 _start:
 
     lgdt [gdt.pointer]
+    call setup_pml4_map
     call protected_to_long
 
 [bits 64]
