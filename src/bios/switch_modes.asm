@@ -16,6 +16,7 @@ call_real_mode_function:
     mov sp, ax
 
     call di ; function pointer
+called_callback:
     call real_to_protected
 
 [bits 32]
@@ -31,14 +32,13 @@ call_real_mode_function:
 
 
 ;------------------------------------------------------------------
-[bits 16]
 ; Jumps from real mode to protected mode
+; Safty - the gdt must be loaded before calling this function
 ; Returns the new stack inside eax
+[bits 16]
 real_to_protected:
-
+    pop di
     cli
-    
-    lgdt [REAL_MODE_RELOCATION(gdt.pointer)]
 
     ; enable protection
     mov eax, cr0
@@ -53,28 +53,33 @@ protected_mode:
     
     ; Note that I don't initialize an IDT
     mov eax, HIGHER_STACK
+    and edi, 0xFFFF
+    push edi
     ret
 
 ;------------------------------------------------------------------
     
 
 ;------------------------------------------------------------------
-[bits 32]
 ; Jumps from protected mode to long mode.
 ; Returns the long mode stack pointer address
+[bits 32]
 protected_to_long:
 
+    pop esi
     call setup_pml4_map
     call enabling_paging_mode
 
-    lgdt [gdt.pointer]
-    
+
     jmp gdt.IA32e_code_segment:long_mode
 
 [bits 64]
 long_mode:
     setup_data_segments gdt.IA32e_data_segment
+
     mov rax, HIGHER_STACK
+    and rsi, 0xFFFFFFFF
+    push rsi
     ret
 ;------------------------------------------------------------------
 

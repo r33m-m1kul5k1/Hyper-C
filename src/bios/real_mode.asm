@@ -1,6 +1,5 @@
 
-; copy real mode code to the lower memory
-real_mode_start:
+
 
 
 ;----------------------------------------------------
@@ -17,7 +16,8 @@ real_mode_callback:
     ret
 ;----------------------------------------------------
 
-%include "src/boot/gdt.asm"
+; copy real mode code to the lower memory
+real_mode_start:
 %include "src/bios/switch_modes.asm"
 %include "src/bios/vga.asm"
 real_mode_end:

@@ -65,4 +65,4 @@ $(OBJECT_DIR)/%.o : $(SRC_DIR)/%.asm
 clean :
 	rm -f $(GRUB_DIR)/hypervisor
 	rm -f $(OBJECT_FILES)
-	rm -f hypervisor.iso
+	rm -f $(OBJECT_DIR)/hypervisor.iso
