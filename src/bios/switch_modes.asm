@@ -17,7 +17,6 @@ call_real_mode_function:
 [bits 32]
     call protected_to_long
 [bits 64]
-before_ret:
     ret
 ;------------------------------------------------------------------
 

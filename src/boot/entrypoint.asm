@@ -28,6 +28,8 @@ _start:
     mov rdi, real_mode_smile
     call real_mode_callback
 
+after:
+    hlt
 
 
 
