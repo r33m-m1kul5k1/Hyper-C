@@ -16,15 +16,21 @@ section .text
 [bits 32]
 _start:
 
+    
+    ; setup long mode structures
     lgdt [gdt.pointer]
     call setup_pml4_map
+    
     call protected_to_long
 
 [bits 64]
-    mov rsp, rax
 
+    mov rsp, HIGHER_MEMORY_STACK_TOP
     call initialize_vmm
 
+    ; the stack pointer must be accessable from real mode
+    mov esp, LOWER_MEMORY_STACK_TOP
+    
     mov rdi, real_mode_smile
     call real_mode_callback
 

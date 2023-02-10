@@ -1,3 +1,4 @@
+; https://wiki.osdev.org/Page_Tables
 
 [bits 32]
 ; Creates multiple paging tables
@@ -21,7 +22,7 @@ setup_entry:
 popa
 ret 
 
-; Setup a four level page tables
+; Setup: one pml4, one pdp, `MEMORY_SIZE` pds that maps to 2Mib memory chunks
 ; ebx - pml4 start
 setup_pml4_map:
 
@@ -45,7 +46,7 @@ setup_pml4_map:
     mov edi, 0x0 ; maps physical memory
     mov ebx, PD_ADDRESS
     mov edx, (PAGE_SIZE | PAGE_WRITE | PAGE_PRESENT)
-    mov ecx, MEMORY_SIZE ; must be lower then 513
+    mov ecx, (MEMORY_SIZE << 9)
     mov eax, LARGE_PAGE_SIZE
     call _create_tables
 

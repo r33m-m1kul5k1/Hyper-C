@@ -8,18 +8,19 @@
 ;-----------------------Memory-----------------------
 %define PAGE_LENGTH 0x1_000
 %define MEMORY_SIZE 2
+; 2 MiB
 %define LARGE_PAGE_SIZE (1 << 21)
 %define HV_BASE_ADDRESS 0x100000
 %define REAL_MODE_BASE_ADDRESS 0x7E00
 ; offset inside the real mode code + base
 %define REAL_MODE_RELOCATION(addr) addr - real_mode_start + REAL_MODE_BASE_ADDRESS
 
-; after 20 Kib of .text section
-%define PML4_ADDRESS 0x5000
+; 1 MiB after HV code start
+%define PML4_ADDRESS HV_BASE_ADDRESS + 0x100000
 %define PDP_ADDRESS PML4_ADDRESS + 0x1000
-%define PD_ADDRESS PDP_ADDRESS + (0x1000 * MEMORY_SIZE)
-%define HIGHER_STACK PD_ADDRESS + 0x1000
-%define LOWER_STACK REAL_MODE_RELOCATION(0x500)
+%define PD_ADDRESS PDP_ADDRESS + 0x1000
+%define LOWER_MEMORY_STACK_TOP 0x7BFF
+%define HIGHER_MEMORY_STACK_TOP PD_ADDRESS + (0x1000 * MEMORY_SIZE) +0x4000
 
 
 ;----------------------------------------------------

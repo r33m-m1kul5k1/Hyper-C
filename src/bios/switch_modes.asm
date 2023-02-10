@@ -41,9 +41,7 @@ real_to_protected:
 protected_mode:
     setup_data_segments gdt.IA32_data_segment
 
-    
     ; Note that I don't initialize an IDT
-    mov eax, HIGHER_STACK
     and edi, 0xFFFF
     push edi
     ret
@@ -89,7 +87,6 @@ protected_to_long:
 long_mode:
     setup_data_segments gdt.IA32e_data_segment
 
-    mov rax, HIGHER_STACK
     and rsi, 0xFFFFFFFF
     push rsi
     ret
@@ -133,7 +130,6 @@ compatibility_mode:
 
     ; Note: in section 9.8.5.4 step 6 intel instructs to make a branch instruction.
     ; I don't do it because it does not effects the current state of the segment registers
-    mov eax, HIGHER_STACK
     
     ret
 ;------------------------------------------------------------------
@@ -175,7 +171,6 @@ protected_real_mode:
 real_mode:
     setup_data_segments 0x0
     sti
-    mov ax, LOWER_STACK
     ret 2 
 ;------------------------------------------------------------------
 
