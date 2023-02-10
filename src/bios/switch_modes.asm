@@ -16,8 +16,10 @@ call_real_mode_function:
 
 [bits 32]
     call protected_to_long
+    
 [bits 64]
     ret
+
 ;------------------------------------------------------------------
 
 
@@ -80,7 +82,7 @@ protected_to_long:
     or eax, PAGING
     mov cr0, eax
 
-
+    ; Note this far jump goes to the higher memory
     jmp gdt.IA32e_code_segment:long_mode
 
 [bits 64]
@@ -101,7 +103,7 @@ long_to_protected:
     ; https://forum.nasm.us/index.php?topic=1474.0
     pop rdx ; saves ip 
     push gdt.IA32_code_segment
-    push compatibility_mode
+    push REAL_MODE_RELOCATION(compatibility_mode)
     retfq
 
 

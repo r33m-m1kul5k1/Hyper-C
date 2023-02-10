@@ -11,6 +11,7 @@ real_mode_callback:
     sub rdi, real_mode_start
     add rdi, REAL_MODE_BASE_ADDRESS
     
+    ; far jump
     mov rax, REAL_MODE_RELOCATION(call_real_mode_function)
     call rax
     ret
