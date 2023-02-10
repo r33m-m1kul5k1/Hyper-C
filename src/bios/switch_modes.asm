@@ -5,6 +5,7 @@
 ; di - points to the real mode function
 [bits 64]
 call_real_mode_function:
+
     call long_to_protected
 
 [bits 32]    
@@ -16,7 +17,7 @@ call_real_mode_function:
 
 [bits 32]
     call protected_to_long
-    
+
 [bits 64]
     ret
 
@@ -101,7 +102,6 @@ long_mode:
 [bits 64]
 long_to_protected:
     ; https://forum.nasm.us/index.php?topic=1474.0
-    pop rdx ; saves ip 
     push gdt.IA32_code_segment
     push REAL_MODE_RELOCATION(compatibility_mode)
     retfq
@@ -110,7 +110,6 @@ long_to_protected:
 [bits 32]
 compatibility_mode:
 
-    push edx ; puts the ip on the stack
     setup_data_segments gdt.IA32_data_segment
     
     mov eax, cr0
@@ -133,7 +132,7 @@ compatibility_mode:
     ; Note: in section 9.8.5.4 step 6 intel instructs to make a branch instruction.
     ; I don't do it because it does not effects the current state of the segment registers
     
-    ret
+    ret 4
 ;------------------------------------------------------------------
     
 ;------------------------------------------------------------------

@@ -2,6 +2,8 @@
 global _start
 global real_mode_start
 global real_mode_end
+global real_mode_callback
+global real_mode_smile
 
 extern initialize_vmm
 
@@ -28,11 +30,7 @@ _start:
     mov rsp, HIGHER_MEMORY_STACK_TOP
     call initialize_vmm
 
-    ; the stack pointer must be accessable from real mode
-    mov esp, LOWER_MEMORY_STACK_TOP
     
-    mov rdi, real_mode_smile
-    call real_mode_callback
 
 after:
     hlt

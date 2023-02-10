@@ -7,13 +7,18 @@
 ; rdi - the callback function pointer
 [bits 64]
 real_mode_callback:
+    enter 0, 0
+    ; the stack pointer must be accessable from real mode
+    mov rsp, LOWER_MEMORY_STACK_TOP
     
     sub rdi, real_mode_start
     add rdi, REAL_MODE_BASE_ADDRESS
-    
-    ; far jump
+
+    ; far call
     mov rax, REAL_MODE_RELOCATION(call_real_mode_function)
     call rax
+
+    leave
     ret
 ;----------------------------------------------------
 
