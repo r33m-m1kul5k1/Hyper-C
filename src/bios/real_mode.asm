@@ -25,5 +25,6 @@ real_mode_callback:
 ; copy real mode code to the lower memory
 real_mode_start:
 %include "src/bios/switch_modes.asm"
+%include "src/bios/ata.asm"
 %include "src/bios/vga.asm"
 real_mode_end:

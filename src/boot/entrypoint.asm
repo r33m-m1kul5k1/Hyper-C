@@ -3,7 +3,7 @@ global _start
 global real_mode_start
 global real_mode_end
 global real_mode_callback
-global real_mode_smile
+global read_disk
 
 extern initialize_vmm
 
@@ -29,8 +29,6 @@ _start:
 
     mov rsp, HIGHER_MEMORY_STACK_TOP
     call initialize_vmm
-
-    
 
 after:
     hlt

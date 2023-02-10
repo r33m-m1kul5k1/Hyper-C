@@ -6,7 +6,7 @@
 extern void real_mode_start();
 extern void real_mode_end();
 extern void real_mode_callback(void (*)());
-extern void real_mode_smile();
+extern void read_disk();
 
 void initialize_vmm()
 {
@@ -21,6 +21,6 @@ void initialize_vmm()
         (size_t)(real_mode_end - real_mode_start)
     );
 
-    real_mode_callback(real_mode_smile);
+    real_mode_callback(read_disk);
 
 }
