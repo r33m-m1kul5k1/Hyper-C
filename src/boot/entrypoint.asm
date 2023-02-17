@@ -4,6 +4,7 @@ global real_mode_start
 global real_mode_end
 global real_mode_callback
 global read_disk
+global real_mode_smile
 
 extern initialize_vmm
 
