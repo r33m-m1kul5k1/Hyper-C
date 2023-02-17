@@ -12,4 +12,4 @@ qemu-system-x86_64 -boot d -cdrom $BUILD_DIR/hypervisor.iso \
 -mon chardev=char0,mode=readline \
 -serial chardev:char0 \
 -m 2G \
--drive file=$BUILD_DIR/bootimage-CrabOS.bin,format=raw,media=cdrom \
+-drive file=$BUILD_DIR/bootimage-CrabOS.bin,format=raw \

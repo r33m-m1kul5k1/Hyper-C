@@ -8,8 +8,7 @@ extern void real_mode_end();
 extern void real_mode_callback(void (*)());
 extern void read_disk();
 
-void initialize_vmm()
-{
+void initialize_vmm() {
     set_log_level(DEBUG_LEVEL);
     
     log_info("initializing machine");
