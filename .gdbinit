@@ -2,6 +2,7 @@ file build/iso/boot/hypervisor
 target remote localhost:1234
 set disassembly-flavor intel
 b _start
+b initialize_vmm
 c
 define hook-stop
 x/1i $rip

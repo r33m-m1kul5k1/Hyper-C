@@ -20,6 +20,7 @@ C_COMPILER = gcc
 C_FLAGS = -c \
 		  -Wall \
 		  -ffreestanding \
+		  -fno-stack-protector \
 		  -g \
 		  -mno-red-zone \
 		  -I ./include

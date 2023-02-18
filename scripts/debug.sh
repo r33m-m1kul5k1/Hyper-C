@@ -11,4 +11,5 @@ qemu-system-x86_64 -cdrom $BUILD_DIR/hypervisor.iso \
 -serial chardev:char0 \
 -m 2G \
 -drive file=$BUILD_DIR/test.txt,format=raw \
--s -S
+-s -S \
+#-cpu host -enable-kvm \

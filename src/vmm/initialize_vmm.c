@@ -1,13 +1,14 @@
 #include "lib/utils.h"
 #include "lib/log.h"
-#include "hardware/types.h"
 #include "hardware/instructions.h"
+#include "hardware/types.h"
+#include "vmx.h"
 
 #define REAL_MODE_BASE_ADDRESS 0x7E00
 #define DAP_ADDRESS 0x500
 #define DRIVE_NUMBER_ADDRESS 0x600
 #define DRIVE_A 0x80
-#define EFER_MSR 0xC0000080
+
 
 extern void real_mode_start();
 extern void real_mode_end();
@@ -22,18 +23,12 @@ void load_mbr();
 void initialize_vmm() {
     
     set_log_level(DEBUG_LEVEL);
-    log_info("initializing machine");
+    log_info("initializing machine.");
+    enter_vmx_root();
+    exit_vmx_root();
 
     initialize_bios();
-    load_mbr();
-
-    write_msr(EFER_MSR, 0x01);
-    qword_t value = read_msr(EFER_MSR);
-    
-    log_info("EFER value: %x", value);
-    log_info("cr3 value: %x", read_cr3());
-    write_cr3(0x0);
-    log_info("cr3 value: %x", read_cr3());
+    // load_mbr();
 }
 
 /*
