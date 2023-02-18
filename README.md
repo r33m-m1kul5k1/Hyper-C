@@ -3,10 +3,13 @@
 a native hypervisor for [CrabOS](https://github.com/r33m-m1kul5k1/CrabOS) and Windows.
 
 ## Build & Run
+
 ```bash
 ./scripts/run.sh
 ```
+
 ### debug
+
 ```bash
 mkdir ~/.config/gdb/ && echo "set auto-load safe-path /" > ~/.config/gdb/gdbinit
 ./scripts/debug.sh
