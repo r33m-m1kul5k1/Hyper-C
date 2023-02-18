@@ -31,6 +31,9 @@ void initialize_vmm() {
     qword_t value = read_msr(EFER_MSR);
     
     log_info("EFER value: %x", value);
+    log_info("cr3 value: %x", read_cr3());
+    write_cr3(0x0);
+    log_info("cr3 value: %x", read_cr3());
 }
 
 /*

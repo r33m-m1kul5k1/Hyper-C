@@ -34,3 +34,59 @@ static inline qword_t read_msr(dword_t msr) {
     return (value << 32 | lsb);
 }
 
+
+static inline qword_t read_cr0() {
+    qword_t cr0;
+    asm volatile("mov %%cr0, %0"
+                    : "=r"(cr0));
+    return cr0;
+}
+
+static inline qword_t read_cr1() {
+    qword_t cr1;
+    asm volatile("mov %%cr1, %0"
+                    : "=r"(cr1));
+    return cr1;
+}
+
+
+static inline qword_t read_cr2() {
+    qword_t cr2;
+    asm volatile("mov %%cr2, %0"
+                    : "=r"(cr2));
+    return cr2;
+}
+
+static inline qword_t read_cr3() {
+    qword_t cr3;
+    asm volatile("mov %%cr3, %0"
+                    : "=r"(cr3));
+    return cr3;
+}
+
+static inline qword_t read_cr4() {
+    qword_t cr4;
+    asm volatile("mov %%cr4, %0"
+                    : "=r"(cr4));
+    return cr4;
+}
+
+static inline void write_cr0(qword_t cr0) {
+    asm volatile("mov %0, %%cr0" :: "r"(cr0));
+}
+
+static inline void write_cr1(qword_t cr1) {
+    asm volatile("mov %0, %%cr1" :: "r"(cr1));
+}
+
+static inline void write_cr2(qword_t cr2) {
+    asm volatile("mov %0, %%cr2" :: "r"(cr2));
+}
+
+static inline void write_cr3(qword_t cr3) {
+    asm volatile("mov %0, %%cr3" :: "r"(cr3));
+}
+
+static inline void write_cr4(qword_t cr4) {
+    asm volatile("mov %0, %%cr4" :: "r"(cr4));
+}
