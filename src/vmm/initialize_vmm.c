@@ -23,12 +23,16 @@ void load_mbr();
 void initialize_vmm() {
     
     set_log_level(DEBUG_LEVEL);
-    log_info("initializing machine.");
+    log_info("initializing machine");
+    
+   
+
     enter_vmx_root();
     exit_vmx_root();
 
     initialize_bios();
-    // load_mbr();
+    load_mbr();
+
 }
 
 /*
