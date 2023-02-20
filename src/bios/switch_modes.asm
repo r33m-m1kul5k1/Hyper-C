@@ -5,10 +5,9 @@
 ; di - points to the real mode function
 [bits 64]
 call_real_mode_function:
-
     call long_to_protected
 
-[bits 32]    
+[bits 32]
     call protected_to_real
 
 [bits 16]
@@ -111,7 +110,7 @@ long_to_protected:
 compatibility_mode:
 
     setup_data_segments gdt.IA32_data_segment
-    
+
     mov eax, cr0
     and eax, ~(PAGING)
     mov cr0, eax

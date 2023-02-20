@@ -17,6 +17,16 @@ mkdir ~/.config/gdb/ && echo "set auto-load safe-path /" > ~/.config/gdb/gdbinit
 gdb <the file you want to debug>
 ```
 
+## Bochs configuration
+
+```bash
+./configure --enable-x86-64 \
+--enable-vmx \
+--enable-gdb-stub \
+--enable-iodebug \
+--enable-long-phy-address
+```
+--enable-debugger and --enable-gdb-stub are mutually exclusive
 ## Resources
 
 - [intel's developer manual](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html)

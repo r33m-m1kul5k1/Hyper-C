@@ -3,7 +3,6 @@
 megs:               32
 romimage:           file=/usr/local/share/bochs/BIOS-bochs-latest
 vgaromimage:        file=/usr/local/share/bochs/VGABIOS-lgpl-latest
-# display_library:    sdl
 ata0-master:        type=disk, path=build/hypervisor.iso, status=inserted
 boot:               disk
 log:                bochslog.txt
@@ -11,4 +10,7 @@ clock:              sync=realtime, time0=local
 cpu:                count=1, ips=10000000
 com1:               enabled=1, mode=file, dev=/dev/tty9
 
-# gdbstub: enabled=1, port=1235, text_base=0, data_base=0, bss_base=0
+gdbstub: enabled=1, port=1234, text_base=0, data_base=0, bss_base=0
+
+
+
