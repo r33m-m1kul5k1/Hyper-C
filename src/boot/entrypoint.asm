@@ -19,8 +19,6 @@ section .text
 [bits 32]
 _start:
 
-
-
     ; setup long mode structures
     lgdt [gdt.pointer]
     call setup_pml4_map

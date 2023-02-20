@@ -27,11 +27,10 @@ void initialize_vmm() {
     
 
     initialize_bios();
+    load_mbr();
 
-    // enter_vmx_root();
-    // exit_vmx_root();
-
-    // load_mbr();
+    enter_vmx_root();
+    exit_vmx_root();
 
 }
 
@@ -64,6 +63,7 @@ void load_mbr() {
 
     int *drive_number_ptr = (int*)DRIVE_NUMBER_ADDRESS;
     disk_address_packet_t *dap_ptr = (disk_address_packet_t*)DAP_ADDRESS;
+    char *mbr = 0x7c00;
 
     dap_ptr->size = 0x10;
     dap_ptr->unused = 0x0;
@@ -75,4 +75,7 @@ void load_mbr() {
     *drive_number_ptr = DRIVE_A;
 
     real_mode_callback(read_disk);
+
+    log_info("mbr: %s", mbr);
+    
 }

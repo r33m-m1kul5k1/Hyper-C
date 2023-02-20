@@ -2,7 +2,7 @@
 # https://stackoverflow.com/questions/59895/how-do-i-get-the-directory-where-a-bash-script-is-located-from-within-the-script
 
 SCRIPT_DIR=$(cd -- $(dirname ${BASH_SOURCE[0]}) &> /dev/null && pwd)
-PROJECT_DIR=$SCRIPT_DIR/..
+PROJECT_DIR=$SCRIPT_DIR/../..
 BUILD_DIR=$PROJECT_DIR/build
 
 make -C $PROJECT_DIR
@@ -13,5 +13,5 @@ qemu-system-x86_64 -cdrom $BUILD_DIR/hypervisor.iso \
 -serial chardev:char0 \
 -m 2G \
 -drive file=$BUILD_DIR/test.txt,format=raw \
--cpu host -enable-kvm \
+# -cpu host -enable-kvm \
 
