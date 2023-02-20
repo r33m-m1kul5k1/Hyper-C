@@ -22,21 +22,21 @@ setup_entry:
 popa
 ret 
 
-; Setup: one pml4, one pdp, `MEMORY_SIZE` pds that maps to 2Mib memory chunks
+; Setup: one pml4, one pdpt, `MEMORY_SIZE` pds that maps to 2Mib memory chunks
 ; ebx - pml4 start
 setup_pml4_map:
 
     ; setup pml4 entry
-    mov edi, PDP_ADDRESS
+    mov edi, PDPT_ADDRESS
     mov ebx, PML4_ADDRESS
     mov edx, (PAGE_WRITE | PAGE_PRESENT)
     mov ecx, 1
     mov eax, PAGE_LENGTH
     call _create_tables
 
-    ; setup pdp entries
+    ; setup pdpt entries
     mov edi, PD_ADDRESS
-    mov ebx, PDP_ADDRESS
+    mov ebx, PDPT_ADDRESS
     mov edx, (PAGE_WRITE | PAGE_PRESENT)
     mov ecx, MEMORY_SIZE ; must be lower then 513
     mov eax, PAGE_LENGTH

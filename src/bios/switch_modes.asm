@@ -116,7 +116,7 @@ compatibility_mode:
     mov cr0, eax
 
     ; note that I stay with the same page tables
-    mov eax, PDP_ADDRESS
+    mov eax, PDPT_ADDRESS
     mov cr3, eax
 
     mov ecx, EFER_MSR          
@@ -128,9 +128,9 @@ compatibility_mode:
     or eax, PAGING
     mov cr0, eax
 
-    ; Note: in section 9.8.5.4 step 6 intel instructs to make a branch instruction.
-    ; I don't do it because it does not effects the current state of the segment registers
-    
+    jmp gdt.IA32_code_segment:.reset_cs
+.reset_cs:
+
     ret 4
 ;------------------------------------------------------------------
     

@@ -17,8 +17,8 @@
 
 ; 1 MiB after HV code start
 %define PML4_ADDRESS HV_BASE_ADDRESS + 0x100000
-%define PDP_ADDRESS PML4_ADDRESS + 0x1000
-%define PD_ADDRESS PDP_ADDRESS + 0x1000
+%define PDPT_ADDRESS PML4_ADDRESS + 0x1000
+%define PD_ADDRESS PDPT_ADDRESS + 0x1000
 ; NOTE: code using this stack can overflow to the dap structure
 %define LOWER_MEMORY_STACK_TOP 0x7BFF
 %define HIGHER_MEMORY_STACK_TOP PD_ADDRESS + (0x1000 * MEMORY_SIZE) +0x4000

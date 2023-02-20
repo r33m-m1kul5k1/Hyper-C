@@ -63,7 +63,7 @@ void load_mbr() {
 
     int *drive_number_ptr = (int*)DRIVE_NUMBER_ADDRESS;
     disk_address_packet_t *dap_ptr = (disk_address_packet_t*)DAP_ADDRESS;
-    char *mbr = 0x7c00;
+    char *mbr = (char*)0x7c00;
 
     dap_ptr->size = 0x10;
     dap_ptr->unused = 0x0;
