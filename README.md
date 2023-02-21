@@ -24,7 +24,8 @@ gdb <the file you want to debug>
 --enable-vmx \
 --enable-gdb-stub \
 --enable-iodebug \
---enable-long-phy-address
+--enable-long-phy-address \
+--enable-raw-serial
 ```
 --enable-debugger and --enable-gdb-stub are mutually exclusive
 ## Resources

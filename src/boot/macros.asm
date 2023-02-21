@@ -7,7 +7,8 @@
 
 ;-----------------------Memory-----------------------
 %define PAGE_LENGTH 0x1_000
-%define MEMORY_SIZE 2
+; intel manual 4.4.1 
+%define MEMORY_SIZE 4
 ; 2 MiB
 %define LARGE_PAGE_SIZE (1 << 21)
 %define HV_BASE_ADDRESS 0x100000
@@ -24,7 +25,6 @@
 %define HIGHER_MEMORY_STACK_TOP PD_ADDRESS + (0x1000 * MEMORY_SIZE) +0x4000
 %define DAP_ADDRESS 0x500
 %define DRIVE_NUMBER_ADDRESS 0x600
-
 ;----------------------------------------------------
 
 ;-----------------------MSRs-------------------------
