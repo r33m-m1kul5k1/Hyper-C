@@ -15,7 +15,7 @@ call_real_mode_function:
     call real_to_protected
 
 [bits 32]
-    call protected_to_long
+    call protected_to_long_lower_memory
 
 [bits 64]
     ret
@@ -55,7 +55,7 @@ protected_mode:
 ; Jumps from protected mode to long mode.
 ; Returns the long mode stack pointer address
 [bits 32]
-protected_to_long:
+protected_to_long_lower_memory:
 
     pop esi
     
@@ -83,10 +83,10 @@ protected_to_long:
     mov cr0, eax
 
     ; Note this far jump goes to the higher memory
-    jmp gdt.IA32e_code_segment:long_mode
+    jmp gdt.IA32e_code_segment:REAL_MODE_RELOCATION(.long_mode)
 
 [bits 64]
-long_mode:
+.long_mode:
     setup_data_segments gdt.IA32e_data_segment
 
     and rsi, 0xFFFFFFFF

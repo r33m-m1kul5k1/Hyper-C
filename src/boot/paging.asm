@@ -29,7 +29,7 @@ setup_pml4_map:
     ; setup pml4 entry
     mov edi, PDPT_ADDRESS
     mov ebx, PML4_ADDRESS
-    mov edx, (PAGE_WRITE | PAGE_PRESENT)
+    mov edx, PAGE_PRESENT
     mov ecx, 1
     mov eax, PAGE_LENGTH
     call _create_tables
@@ -37,7 +37,7 @@ setup_pml4_map:
     ; setup pdpt entries
     mov edi, PD_ADDRESS
     mov ebx, PDPT_ADDRESS
-    mov edx, (PAGE_WRITE | PAGE_PRESENT)
+    mov edx, PAGE_PRESENT
     mov ecx, MEMORY_SIZE ; must be lower then 513
     mov eax, PAGE_LENGTH
     call _create_tables

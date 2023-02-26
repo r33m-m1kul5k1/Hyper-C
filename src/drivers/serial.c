@@ -5,6 +5,6 @@ void serial_print(char* buffer)
 {
     for (; *buffer != '\0'; buffer++)
     {
-        out(BOCH_DEBUG, *buffer);
+        out(BOCH_DEBUG, *buffer); // COM1
     }
 }

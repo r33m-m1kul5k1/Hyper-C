@@ -27,4 +27,5 @@ real_mode_start:
 %include "src/bios/switch_modes.asm"
 %include "src/bios/ata.asm"
 %include "src/bios/vga.asm"
+%include "src/boot/paging.asm"
 real_mode_end:
