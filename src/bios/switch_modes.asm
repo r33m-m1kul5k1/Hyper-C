@@ -70,7 +70,7 @@ protected_to_long_lower_memory:
     mov cr4, eax
 
     ; initialize PML4 pointer
-    mov eax, PML4_ADDRESS
+    mov eax, IA32e_PAGING_BASE
     mov cr3, eax
 
     mov ecx, EFER_MSR          
@@ -110,13 +110,13 @@ long_to_protected:
 compatibility_mode:
 
     setup_data_segments gdt.IA32_data_segment
+    call setup_pdpt_map
 
     mov eax, cr0
     and eax, ~(PAGING)
     mov cr0, eax
 
-    ; note that I stay with the same page tables
-    mov eax, PDPT_ADDRESS
+    mov eax, IA32_PAGING_BASE
     mov cr3, eax
 
     mov ecx, EFER_MSR          

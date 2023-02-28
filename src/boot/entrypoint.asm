@@ -17,11 +17,10 @@ section .text
 
 [bits 32]
 _start:
-
     call protected_to_long
 
 [bits 64]  
-    mov rsp, HIGHER_MEMORY_STACK_TOP
+    mov rsp, STACK_TOP
     call initialize_vmm
 
 after:
@@ -51,7 +50,7 @@ protected_to_long:
     mov cr4, eax
 
     ; initialize PML4 pointer
-    mov eax, PML4_ADDRESS
+    mov eax, IA32e_PAGING_BASE
     mov cr3, eax
 
     mov ecx, EFER_MSR          

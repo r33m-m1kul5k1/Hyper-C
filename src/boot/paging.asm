@@ -20,31 +20,51 @@ setup_entry:
     add ebx, 8
     loop setup_entry
 popa
-ret 
+ret
 
 ; Setup: one pml4, one pdpt, `MEMORY_SIZE` pds that maps to 2Mib memory chunks
-; ebx - pml4 start
 setup_pml4_map:
 
     ; setup pml4 entry
-    mov edi, PDPT_ADDRESS
-    mov ebx, PML4_ADDRESS
-    mov edx, PAGE_PRESENT
+    mov edi, IA32e_PAGING_BASE + PAGE_LENGTH       ; PDPT
+    mov ebx, IA32e_PAGING_BASE                     ; PML4
+    mov edx, (PAGE_WRITE | PAGE_PRESENT)
     mov ecx, 1
     mov eax, PAGE_LENGTH
     call _create_tables
 
     ; setup pdpt entries
-    mov edi, PD_ADDRESS
-    mov ebx, PDPT_ADDRESS
-    mov edx, PAGE_PRESENT
-    mov ecx, MEMORY_SIZE ; must be lower then 513
+    mov edi, IA32e_PAGING_BASE + (2 * PAGE_LENGTH) ; PDT
+    mov ebx, IA32e_PAGING_BASE + PAGE_LENGTH       ; PDPT
+    mov edx, (PAGE_WRITE | PAGE_PRESENT)
+    mov ecx, MEMORY_SIZE                    
     mov eax, PAGE_LENGTH
     call _create_tables
     
     ; setup pd entries
     mov edi, 0x0 ; maps physical memory
-    mov ebx, PD_ADDRESS
+    mov ebx, IA32e_PAGING_BASE + (2 * PAGE_LENGTH) ; PDT
+    mov edx, (PAGE_SIZE | PAGE_WRITE | PAGE_PRESENT)
+    mov ecx, (MEMORY_SIZE << 9)
+    mov eax, LARGE_PAGE_SIZE
+    call _create_tables
+
+ret
+
+; Setup: one pdpt, and `MEMORY_SIZE` pds 
+setup_pdpt_map:
+
+    ; setup pdpt entries
+    mov edi, IA32_PAGING_BASE + PAGE_LENGTH         ; PDT
+    mov ebx, IA32_PAGING_BASE                       ; PDPT
+    mov edx, PAGE_PRESENT
+    mov ecx, MEMORY_SIZE                    
+    mov eax, PAGE_LENGTH
+    call _create_tables
+    
+    ; setup pd entries
+    mov edi, 0x0 ; maps physical memory
+    mov ebx, IA32_PAGING_BASE + PAGE_LENGTH         ; PDT
     mov edx, (PAGE_SIZE | PAGE_WRITE | PAGE_PRESENT)
     mov ecx, (MEMORY_SIZE << 9)
     mov eax, LARGE_PAGE_SIZE
