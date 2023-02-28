@@ -96,7 +96,7 @@ protected_to_long_lower_memory:
 
 
 ;------------------------------------------------------------------
-; Jumps from long mode to protected mode.
+; Jumps from long mode to protected mode with no pae & paging.
 ; Returns the protected mode stack pointer address
 [bits 64]
 long_to_protected:
@@ -110,26 +110,19 @@ long_to_protected:
 compatibility_mode:
 
     setup_data_segments gdt.IA32_data_segment
-    call setup_pdpt_map
 
     mov eax, cr0
     and eax, ~(PAGING)
     mov cr0, eax
-
-    mov eax, IA32_PAGING_BASE
-    mov cr3, eax
 
     mov ecx, EFER_MSR          
     rdmsr
     and eax, ~LONG_MODE               
     wrmsr
 
-    mov eax, cr0
-    or eax, PAGING
-    mov cr0, eax
-
-    jmp gdt.IA32_code_segment:.reset_cs
-.reset_cs:
+    mov eax, cr4
+    and eax, ~(PAE)
+    mov cr4, eax
 
     ret 4
 ;------------------------------------------------------------------
@@ -140,23 +133,12 @@ compatibility_mode:
 ; Returns the real mode stack pointer address
 [bits 32]
 protected_to_real:
-    
     cli
-    ; paging must be identity mapped
-    mov eax, cr0
-    and eax, ~(PAGING)
-    mov cr0, eax
-
-    ; flush TLB
-    mov eax, 0x0
-    mov cr3, eax
-
     jmp gdt.real_mode_code_segment:REAL_MODE_RELOCATION(protected_real_mode)
  
 [bits 16]
 protected_real_mode:
     setup_data_segments gdt.real_mode_data_segment
-    
     
     lidt [REAL_MODE_RELOCATION(ivt_pointer)]
 

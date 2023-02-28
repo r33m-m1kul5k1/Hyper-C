@@ -5,3 +5,7 @@ when enabling paging back with pae in protected mode the HV crashes.
 reasons:
 1. I shouldn't load the cr3 register when jumping to protected mode from long mode.
 2. Most likely not a format issue.
+
+solutions:
+1. to not use pae & paging in protected mode.
+
