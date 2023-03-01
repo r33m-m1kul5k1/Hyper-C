@@ -1,2 +1,0 @@
-bochs -q &
-gdb
