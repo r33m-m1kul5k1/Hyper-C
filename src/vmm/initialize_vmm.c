@@ -26,11 +26,10 @@ void initialize_vmm() {
     log_info("initializing machine");
     
 
-    initialize_bios();
-    load_mbr();
+    // initialize_bios();
+    // load_mbr();
 
     enter_vmx_root();
-    exit_vmx_root();
 
 }
 

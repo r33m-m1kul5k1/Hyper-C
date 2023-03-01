@@ -1,5 +1,6 @@
 #include "hardware/instructions.h"
 #include "lib/log.h"
+#include "lib/utils.h"
 
 
 #define CR4_VMX_ENABLE (1 << 13)
@@ -14,10 +15,8 @@
 void enter_vmx_root() {
     
     qword_t value = read_msr(IA32_VMX_CR4_FIXED1);
-    
+    char test[] = "sup";
+    memset((test+1), 0, 2);
+    log_info("test: %s", test);
     log_info("IA32_VMX_CR4_FIXED1 value: %x", value);
-}
-
-void exit_vmx_root() {
-
 }

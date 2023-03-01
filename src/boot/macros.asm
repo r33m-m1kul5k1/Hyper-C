@@ -20,11 +20,11 @@
 %define REAL_MODE_RELOCATION(addr) addr - real_mode_start + REAL_MODE_BASE_ADDRESS
 
 ; Free memory regions
-; 0x500  - 0x7BFF => 7 KiB
+; 0x500  - 0x7BFF => 28 KiB
 %define STACK_TOP 0x7BFF
 %define DAP_ADDRESS 0x500
 %define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
-; 0x7E00 - 0x7FFFF - 120 KiB
+; 0x7E00 - 0x7FFFF - 480 KiB
 
 %define IA32e_PAGING_BASE 0x10000
 
