@@ -50,24 +50,3 @@ setup_pml4_map:
     call _create_tables
 
 ret
-
-; Setup: one pdpt, and `MEMORY_SIZE` pds 
-setup_pdpt_map:
-
-    ; setup pdpt entries
-    mov edi, IA32_PAGING_BASE + PAGE_LENGTH         ; PDT
-    mov ebx, IA32_PAGING_BASE                       ; PDPT
-    mov edx, PAGE_PRESENT
-    mov ecx, MEMORY_SIZE                    
-    mov eax, PAGE_LENGTH
-    call _create_tables
-    
-    ; setup pd entries
-    mov edi, 0x0 ; maps physical memory
-    mov ebx, IA32_PAGING_BASE + PAGE_LENGTH         ; PDT
-    mov edx, (PAGE_SIZE | PAGE_WRITE | PAGE_PRESENT)
-    mov ecx, (MEMORY_SIZE << 9)
-    mov eax, LARGE_PAGE_SIZE
-    call _create_tables
-
-ret 

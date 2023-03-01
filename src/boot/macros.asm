@@ -7,27 +7,28 @@
 
 ;-----------------------Memory-----------------------
 %define PAGE_LENGTH 0x1_000
-; intel manual 4.4.1
+
 ; at most can be 512
 %define MEMORY_SIZE 4
 ; 2 MiB
 %define LARGE_PAGE_SIZE (1 << 21)
 %define FOUR_MEGAS (1 << 22)
 %define HV_BASE_ADDRESS 0x100000
-; the code must be smaller then 16 KiB
+; the code must be smaller then 32 KiB till 0xFFFF
 %define REAL_MODE_BASE_ADDRESS 0x7E00 
 ; offset inside the real mode code + base
 %define REAL_MODE_RELOCATION(addr) addr - real_mode_start + REAL_MODE_BASE_ADDRESS
 
 ; Free memory regions
 ; 0x500  - 0x7BFF => 7 KiB
+%define STACK_TOP 0x7BFF
+%define DAP_ADDRESS 0x500
+%define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
 ; 0x7E00 - 0x7FFFF - 120 KiB
 
-%define IA32e_PAGING_BASE 0x18000
-%define IA32_PAGING_BASE IA32e_PAGING_BASE + ((2 + MEMORY_SIZE) * PAGE_LENGTH)
-%define STACK_TOP IA32_PAGING_BASE + ((1 + MEMORY_SIZE) * PAGE_LENGTH) + 0xA000
-%define DAP_ADDRESS STACK_TOP + 1
-%define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
+%define IA32e_PAGING_BASE 0x10000
+
+
 ;----------------------------------------------------
 
 ;-----------------------MSRs-------------------------

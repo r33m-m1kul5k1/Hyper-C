@@ -1,0 +1,24 @@
+the bug:
+
+when enabling paging back with pae in protected mode the HV crashes.
+
+reasons:
+1. I shouldn't load the cr3 register when jumping to protected mode from long mode.
+2. Most likely not a format issue.
+
+solutions:
+1. to not use pae & paging in protected mode.
+
+
+the bug:
+
+when returning from the protected_to_real function the ret instruction jumps to 0xcec
+it happens without the cpu host
+
+reasons:
+1. sti results an interrupt call
+2. takes the wrong address from the stack
+3. disabling paging the wrong way - not it
+4. maybe protected mode must use paging?
+
+the stack address was higher then accessible in real mode :)

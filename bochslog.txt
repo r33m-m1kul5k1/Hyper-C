@@ -36,7 +36,7 @@
 00000000000i[IMG   ] Disk image modules
 00000000000i[IMG   ]   flat concat sparse dll growing undoable volatile vmware3
 00000000000i[IMG   ]   vmware4 vbox vpc vvfat
-00000000000i[MEM0  ] allocated memory at 0x7f2a647dd010. after alignment, vector=0x7f2a647de000
+00000000000i[MEM0  ] allocated memory at 0x7f30ac1dd010. after alignment, vector=0x7f30ac1de000
 00000000000i[MEM0  ] 32.00MB
 00000000000i[MEM0  ] mem block size = 0x00020000, blocks=256
 00000000000i[MEM0  ] rom at 0xfffe0000/131072 ('/usr/local/share/bochs/BIOS-bochs-latest')
@@ -47,7 +47,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Mon Feb 27 21:59:19 2023 (time0=1677527959)
+00000000000i[CMOS  ] Setting initial clock to: Wed Mar  1 10:37:36 2023 (time0=1677659856)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -183,86 +183,458 @@
 00000000000i[GDBST ] addr 000000000000fff0 len 1
 00000000000i[GDBST ] addr 000000000000fff0 len 1
 00000000000i[GDBST ] addr 000000000000fff0 len 9
-00000000000i[GDBST ] addr 0000000000100c80 len 40
-00000000000i[GDBST ] addr 0000000000100c87 len 1
-00000000000i[GDBST ] Setting breakpoint at 0000000000100c87
+00000000000i[GDBST ] addr 0000000000100c40 len 40
+00000000000i[GDBST ] addr 0000000000100c5e len 1
+00000000000i[GDBST ] Setting breakpoint at 0000000000100c5e
 00000004662i[BIOS  ] $Revision: 14314 $ $Date: 2021-07-14 18:10:19 +0200 (Wed, 14 Jul 2021) $
 00000325063i[KBD   ] reset-disable command received
 00000330809i[BIOS  ] Starting rombios32
 00000331247i[BIOS  ] Shutdown flag 0
 00000331845i[BIOS  ] ram_size=0x02000000
 00000332277i[BIOS  ] ram_end=32MB
-00000344543i[BIOS  ] Found 1 cpu(s)
-00000358196i[BIOS  ] bios_table_addr: 0x000f9d98 end=0x000fcc00
-00000686012i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
-00001013947i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x0b
-00001013971i[P2ISA ] PCI IRQ routing: PIRQB# set to 0x09
-00001013995i[P2ISA ] PCI IRQ routing: PIRQC# set to 0x0b
-00001014019i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x09
-00001014029i[P2ISA ] write: ELCR2 = 0x0a
-00001014798i[BIOS  ] PIIX3/PIIX4 init: elcr=00 0a
-00001028420i[BIOS  ] PCI: bus=0 devfn=0x00: vendor_id=0x8086 device_id=0x1237 class=0x0600
-00001030764i[BIOS  ] PCI: bus=0 devfn=0x08: vendor_id=0x8086 device_id=0x7000 class=0x0601
-00001032947i[BIOS  ] PCI: bus=0 devfn=0x09: vendor_id=0x8086 device_id=0x7010 class=0x0101
-00001033182i[PIDE  ] BAR #4: i/o base address = 0xc000
-00001033798i[BIOS  ] region 4: 0x0000c000
-00001035856i[BIOS  ] PCI: bus=0 devfn=0x0b: vendor_id=0x8086 device_id=0x7113 class=0x0680
-00001036132i[ACPI  ] new IRQ line = 11
-00001036146i[ACPI  ] new IRQ line = 9
-00001036174i[ACPI  ] new PM base address: 0xb000
-00001036188i[ACPI  ] new SM base address: 0xb100
-00001036216i[PCI   ] setting SMRAM control register to 0x4a
-00001200351i[CPU0  ] Enter to System Management Mode
-00001200351i[CPU0  ] enter_system_management_mode: temporary disable VMX while in SMM mode
-00001200361i[CPU0  ] RSM: Resuming from System Management Mode
-00001364417i[PCI   ] setting SMRAM control register to 0x0a
-00001391033i[BIOS  ] MP table addr=0x000f9e70 MPC table addr=0x000f9da0 size=0xc8
-00001392740i[BIOS  ] SMBIOS table addr=0x000f9e80
-00001394829i[BIOS  ] ACPI tables: RSDP addr=0x000f9fa0 ACPI DATA addr=0x01ff0000 size=0xff8
-00001397813i[BIOS  ] Firmware waking vector 0x1ff00cc
-00001400067i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
-00001400797i[BIOS  ] bios_table_cur_addr: 0x000f9fc4
-00001518917i[VBIOS ] VGABios $Id: vgabios.c 288 2021-05-28 19:05:28Z vruppert $
-00001518988i[BXVGA ] VBE known Display Interface b0c0
-00001519020i[BXVGA ] VBE known Display Interface b0c5
-00001521663i[VBIOS ] VBE Bios $Id: vbe.c 292 2021-06-03 12:24:22Z vruppert $
-00001750304i[BIOS  ] ata0-0: PCHS=54/16/63 translation=none LCHS=54/16/63
-00003498414i[XGUI  ] charmap update. Font is 9 x 16
-00005183969i[BIOS  ] IDE time out
-07910846733i[BIOS  ] Booting from 0000:7c00
-08044060934i[GDBST ] found breakpoint at 100c87
-08044060934i[GDBST ] stopped with ac1
-08044060934i[GDBST ] Removing breakpoint at 0000000000100c87
-08044060934i[GDBST ] addr 0000000000100c88 len 1
-08044060934i[GDBST ] addr 0000000000100c88 len 1
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934i[GDBST ] Setting breakpoint at 0000000000100c87
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934i[GDBST ] addr 0000000000007e00 len 4
-08044060934p[GDBST ] >>PANIC<< Debugger asked us to quit
-08044060934i[CPU0  ] CPU is in protected mode (active)
-08044060934i[CPU0  ] CS.mode = 32 bit
-08044060934i[CPU0  ] SS.mode = 32 bit
-08044060934i[CPU0  ] EFER   = 0x00000000
-08044060934i[CPU0  ] | EAX=36d76289  EBX=00104698  ECX=00000000  EDX=00000000
-08044060934i[CPU0  ] | ESP=0007ff00  EBP=00000000  ESI=00000000  EDI=00000000
-08044060934i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf ZF af PF cf
-08044060934i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-08044060934i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-08044060934i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-08044060934i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-08044060934i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-08044060934i[CPU0  ] |  FS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-08044060934i[CPU0  ] |  GS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-08044060934i[CPU0  ] | EIP=00100c87 (00100c87)
-08044060934i[CPU0  ] | CR0=0x60000011 CR2=0x00000000
-08044060934i[CPU0  ] | CR3=0x00000000 CR4=0x00000000
-08044060934i[CPU0  ] 0x0000000000100c87>> call .+11 (0x00100c97) : E80B000000
-08044060934i[CMOS  ] Last time is 1677528763 (Mon Feb 27 22:12:43 2023)
-08044060934i[XGUI  ] Exit
-08044060934i[      ] restoring default signal behavior
-08044060934i[SIM   ] quit_sim called with exit code 1
+00000344534i[BIOS  ] Found 1 cpu(s)
+00000358187i[BIOS  ] bios_table_addr: 0x000f9d98 end=0x000fcc00
+00000686003i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
+00001013938i[P2ISA ] PCI IRQ routing: PIRQA# set to 0x0b
+00001013962i[P2ISA ] PCI IRQ routing: PIRQB# set to 0x09
+00001013986i[P2ISA ] PCI IRQ routing: PIRQC# set to 0x0b
+00001014010i[P2ISA ] PCI IRQ routing: PIRQD# set to 0x09
+00001014020i[P2ISA ] write: ELCR2 = 0x0a
+00001014789i[BIOS  ] PIIX3/PIIX4 init: elcr=00 0a
+00001028411i[BIOS  ] PCI: bus=0 devfn=0x00: vendor_id=0x8086 device_id=0x1237 class=0x0600
+00001030755i[BIOS  ] PCI: bus=0 devfn=0x08: vendor_id=0x8086 device_id=0x7000 class=0x0601
+00001032938i[BIOS  ] PCI: bus=0 devfn=0x09: vendor_id=0x8086 device_id=0x7010 class=0x0101
+00001033173i[PIDE  ] BAR #4: i/o base address = 0xc000
+00001033789i[BIOS  ] region 4: 0x0000c000
+00001035847i[BIOS  ] PCI: bus=0 devfn=0x0b: vendor_id=0x8086 device_id=0x7113 class=0x0680
+00001036123i[ACPI  ] new IRQ line = 11
+00001036137i[ACPI  ] new IRQ line = 9
+00001036165i[ACPI  ] new PM base address: 0xb000
+00001036179i[ACPI  ] new SM base address: 0xb100
+00001036207i[PCI   ] setting SMRAM control register to 0x4a
+00001200342i[CPU0  ] Enter to System Management Mode
+00001200342i[CPU0  ] enter_system_management_mode: temporary disable VMX while in SMM mode
+00001200352i[CPU0  ] RSM: Resuming from System Management Mode
+00001364408i[PCI   ] setting SMRAM control register to 0x0a
+00001391024i[BIOS  ] MP table addr=0x000f9e70 MPC table addr=0x000f9da0 size=0xc8
+00001392731i[BIOS  ] SMBIOS table addr=0x000f9e80
+00001394820i[BIOS  ] ACPI tables: RSDP addr=0x000f9fa0 ACPI DATA addr=0x01ff0000 size=0xff8
+00001397804i[BIOS  ] Firmware waking vector 0x1ff00cc
+00001400058i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
+00001400788i[BIOS  ] bios_table_cur_addr: 0x000f9fc4
+00001518908i[VBIOS ] VGABios $Id: vgabios.c 288 2021-05-28 19:05:28Z vruppert $
+00001518979i[BXVGA ] VBE known Display Interface b0c0
+00001519011i[BXVGA ] VBE known Display Interface b0c5
+00001521654i[VBIOS ] VBE Bios $Id: vbe.c 292 2021-06-03 12:24:22Z vruppert $
+00001750295i[BIOS  ] ata0-0: PCHS=54/16/63 translation=none LCHS=54/16/63
+00003288475i[XGUI  ] charmap update. Font is 9 x 16
+00005183983i[BIOS  ] IDE time out
+07647784447i[BIOS  ] Booting from 0000:7c00
+07780993249i[GDBST ] found breakpoint at 100c5e
+07780993249i[GDBST ] stopped with ac1
+07780993249i[GDBST ] Removing breakpoint at 0000000000100c5e
+07780993249i[GDBST ] addr 0000000000100c5f len 1
+07780993249i[GDBST ] addr 0000000000100c5f len 1
+07780993249i[GDBST ] addr 0000000000007ec9 len 1
+07780993249i[GDBST ] Setting breakpoint at 0000000000007ec9
+07780993249i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781017195e[SER   ] com1: write to tx hold register when not empty
+07781017218e[SER   ] com1: write to tx hold register when not empty
+07781017241e[SER   ] com1: write to tx hold register when not empty
+07781017264e[SER   ] com1: write to tx hold register when not empty
+07781017287e[SER   ] com1: write to tx hold register when not empty
+07781017310e[SER   ] com1: write to tx hold register when not empty
+07781017333e[SER   ] com1: write to tx hold register when not empty
+07781017356e[SER   ] com1: write to tx hold register when not empty
+07781017379e[SER   ] com1: write to tx hold register when not empty
+07781017402e[SER   ] com1: write to tx hold register when not empty
+07781017425e[SER   ] com1: write to tx hold register when not empty
+07781017448e[SER   ] com1: write to tx hold register when not empty
+07781017471e[SER   ] com1: write to tx hold register when not empty
+07781017494e[SER   ] com1: write to tx hold register when not empty
+07781017517e[SER   ] com1: write to tx hold register when not empty
+07781017540e[SER   ] com1: write to tx hold register when not empty
+07781017563e[SER   ] com1: write to tx hold register when not empty
+07781017586e[SER   ] com1: write to tx hold register when not empty
+07781017609e[SER   ] com1: write to tx hold register when not empty
+07781017632e[SER   ] com1: write to tx hold register when not empty
+07781017655e[SER   ] com1: write to tx hold register when not empty
+07781017678e[SER   ] com1: write to tx hold register when not empty
+07781017701e[SER   ] com1: write to tx hold register when not empty
+07781017724e[SER   ] com1: write to tx hold register when not empty
+07781017747e[SER   ] com1: write to tx hold register when not empty
+07781017770e[SER   ] com1: write to tx hold register when not empty
+07781017793e[SER   ] com1: write to tx hold register when not empty
+07781017816e[SER   ] com1: write to tx hold register when not empty
+07781017839e[SER   ] com1: write to tx hold register when not empty
+07781017862e[SER   ] com1: write to tx hold register when not empty
+07781017885e[SER   ] com1: write to tx hold register when not empty
+07781017908e[SER   ] com1: write to tx hold register when not empty
+07781017931e[SER   ] com1: write to tx hold register when not empty
+07781017954e[SER   ] com1: write to tx hold register when not empty
+07781017977e[SER   ] com1: write to tx hold register when not empty
+07781018000e[SER   ] com1: write to tx hold register when not empty
+07781018046e[SER   ] com1: write to tx hold register when not empty
+07781018069e[SER   ] com1: write to tx hold register when not empty
+07781018092e[SER   ] com1: write to tx hold register when not empty
+07781018115e[SER   ] com1: write to tx hold register when not empty
+07781018138e[SER   ] com1: write to tx hold register when not empty
+07781018161e[SER   ] com1: write to tx hold register when not empty
+07781018184e[SER   ] com1: write to tx hold register when not empty
+07781018207e[SER   ] com1: write to tx hold register when not empty
+07781018230e[SER   ] com1: write to tx hold register when not empty
+07781018253e[SER   ] com1: write to tx hold register when not empty
+07781018276e[SER   ] com1: write to tx hold register when not empty
+07781018299e[SER   ] com1: write to tx hold register when not empty
+07781018322e[SER   ] com1: write to tx hold register when not empty
+07781018345e[SER   ] com1: write to tx hold register when not empty
+07781018368e[SER   ] com1: write to tx hold register when not empty
+07781018391e[SER   ] com1: write to tx hold register when not empty
+07781018414e[SER   ] com1: write to tx hold register when not empty
+07781018437e[SER   ] com1: write to tx hold register when not empty
+07781028860e[SER   ] com1: write to tx hold register when not empty
+07781028883e[SER   ] com1: write to tx hold register when not empty
+07781028906e[SER   ] com1: write to tx hold register when not empty
+07781028929e[SER   ] com1: write to tx hold register when not empty
+07781028952e[SER   ] com1: write to tx hold register when not empty
+07781028975e[SER   ] com1: write to tx hold register when not empty
+07781028998e[SER   ] com1: write to tx hold register when not empty
+07781029021e[SER   ] com1: write to tx hold register when not empty
+07781029044e[SER   ] com1: write to tx hold register when not empty
+07781029067e[SER   ] com1: write to tx hold register when not empty
+07781029090e[SER   ] com1: write to tx hold register when not empty
+07781029113e[SER   ] com1: write to tx hold register when not empty
+07781029136e[SER   ] com1: write to tx hold register when not empty
+07781029159e[SER   ] com1: write to tx hold register when not empty
+07781029182e[SER   ] com1: write to tx hold register when not empty
+07781029205e[SER   ] com1: write to tx hold register when not empty
+07781029228e[SER   ] com1: write to tx hold register when not empty
+07781029251e[SER   ] com1: write to tx hold register when not empty
+07781029274e[SER   ] com1: write to tx hold register when not empty
+07781029297e[SER   ] com1: write to tx hold register when not empty
+07781029320e[SER   ] com1: write to tx hold register when not empty
+07781029343e[SER   ] com1: write to tx hold register when not empty
+07781029366e[SER   ] com1: write to tx hold register when not empty
+07781029389e[SER   ] com1: write to tx hold register when not empty
+07781029412e[SER   ] com1: write to tx hold register when not empty
+07781029435e[SER   ] com1: write to tx hold register when not empty
+07781029458e[SER   ] com1: write to tx hold register when not empty
+07781029481e[SER   ] com1: write to tx hold register when not empty
+07781029504e[SER   ] com1: write to tx hold register when not empty
+07781029527e[SER   ] com1: write to tx hold register when not empty
+07781029550e[SER   ] com1: write to tx hold register when not empty
+07781029573e[SER   ] com1: write to tx hold register when not empty
+07781029596e[SER   ] com1: write to tx hold register when not empty
+07781029619e[SER   ] com1: write to tx hold register when not empty
+07781029642e[SER   ] com1: write to tx hold register when not empty
+07781029665e[SER   ] com1: write to tx hold register when not empty
+07781029711e[SER   ] com1: write to tx hold register when not empty
+07781029734e[SER   ] com1: write to tx hold register when not empty
+07781029757e[SER   ] com1: write to tx hold register when not empty
+07781029780e[SER   ] com1: write to tx hold register when not empty
+07781029803e[SER   ] com1: write to tx hold register when not empty
+07781029826e[SER   ] com1: write to tx hold register when not empty
+07781029849e[SER   ] com1: write to tx hold register when not empty
+07781029872e[SER   ] com1: write to tx hold register when not empty
+07781029895e[SER   ] com1: write to tx hold register when not empty
+07781029918e[SER   ] com1: write to tx hold register when not empty
+07781029941e[SER   ] com1: write to tx hold register when not empty
+07781029964e[SER   ] com1: write to tx hold register when not empty
+07781029987e[SER   ] com1: write to tx hold register when not empty
+07781030010e[SER   ] com1: write to tx hold register when not empty
+07781030033e[SER   ] com1: write to tx hold register when not empty
+07781030056e[SER   ] com1: write to tx hold register when not empty
+07781030079e[SER   ] com1: write to tx hold register when not empty
+07781030102e[SER   ] com1: write to tx hold register when not empty
+07781030125e[SER   ] com1: write to tx hold register when not empty
+07781030148e[SER   ] com1: write to tx hold register when not empty
+07781030171e[SER   ] com1: write to tx hold register when not empty
+07781030194e[SER   ] com1: write to tx hold register when not empty
+07781030217e[SER   ] com1: write to tx hold register when not empty
+07781030240e[SER   ] com1: write to tx hold register when not empty
+07781030263e[SER   ] com1: write to tx hold register when not empty
+07781030286e[SER   ] com1: write to tx hold register when not empty
+07781030309e[SER   ] com1: write to tx hold register when not empty
+07781030332e[SER   ] com1: write to tx hold register when not empty
+07781030355e[SER   ] com1: write to tx hold register when not empty
+07781030378e[SER   ] com1: write to tx hold register when not empty
+07781030401e[SER   ] com1: write to tx hold register when not empty
+07781030424e[SER   ] com1: write to tx hold register when not empty
+07781030447e[SER   ] com1: write to tx hold register when not empty
+07781030470e[SER   ] com1: write to tx hold register when not empty
+07781030493e[SER   ] com1: write to tx hold register when not empty
+07781030516e[SER   ] com1: write to tx hold register when not empty
+07781030539e[SER   ] com1: write to tx hold register when not empty
+07781030585e[SER   ] com1: write to tx hold register when not empty
+07781030608e[SER   ] com1: write to tx hold register when not empty
+07781030631e[SER   ] com1: write to tx hold register when not empty
+07781030654e[SER   ] com1: write to tx hold register when not empty
+07781030677e[SER   ] com1: write to tx hold register when not empty
+07781030700e[SER   ] com1: write to tx hold register when not empty
+07781030723e[SER   ] com1: write to tx hold register when not empty
+07781030746e[SER   ] com1: write to tx hold register when not empty
+07781030769e[SER   ] com1: write to tx hold register when not empty
+07781030792e[SER   ] com1: write to tx hold register when not empty
+07781030815e[SER   ] com1: write to tx hold register when not empty
+07781030838e[SER   ] com1: write to tx hold register when not empty
+07781030861e[SER   ] com1: write to tx hold register when not empty
+07781030884e[SER   ] com1: write to tx hold register when not empty
+07781030907e[SER   ] com1: write to tx hold register when not empty
+07781030930e[SER   ] com1: write to tx hold register when not empty
+07781030953e[SER   ] com1: write to tx hold register when not empty
+07781030976e[SER   ] com1: write to tx hold register when not empty
+07781030999e[SER   ] com1: write to tx hold register when not empty
+07781031022e[SER   ] com1: write to tx hold register when not empty
+07781031045e[SER   ] com1: write to tx hold register when not empty
+07781031068e[SER   ] com1: write to tx hold register when not empty
+07781031091e[SER   ] com1: write to tx hold register when not empty
+07781031114e[SER   ] com1: write to tx hold register when not empty
+07781031137e[SER   ] com1: write to tx hold register when not empty
+07781031160e[SER   ] com1: write to tx hold register when not empty
+07781031183e[SER   ] com1: write to tx hold register when not empty
+07781031206e[SER   ] com1: write to tx hold register when not empty
+07781031229e[SER   ] com1: write to tx hold register when not empty
+07781031252e[SER   ] com1: write to tx hold register when not empty
+07781031275e[SER   ] com1: write to tx hold register when not empty
+07781031298e[SER   ] com1: write to tx hold register when not empty
+07781031321e[SER   ] com1: write to tx hold register when not empty
+07781031344e[SER   ] com1: write to tx hold register when not empty
+07781031367e[SER   ] com1: write to tx hold register when not empty
+07781031390e[SER   ] com1: write to tx hold register when not empty
+07781031413e[SER   ] com1: write to tx hold register when not empty
+07781031459e[SER   ] com1: write to tx hold register when not empty
+07781031482e[SER   ] com1: write to tx hold register when not empty
+07781031505e[SER   ] com1: write to tx hold register when not empty
+07781031528e[SER   ] com1: write to tx hold register when not empty
+07781038772i[GDBST ] found breakpoint at 7ec9
+07781038772i[GDBST ] stopped with ac1
+07781038772i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038772i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038772i[GDBST ] addr 0000000000007ec0 len 40
+07781038772i[GDBST ] addr 0000000000007eca len 1
+07781038772i[GDBST ] addr 0000000000007eca len 1
+07781038772i[GDBST ] addr 0000000000007eca len 9
+07781038772i[GDBST ] addr 0000000000007ef2 len 1
+07781038772i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038772i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038772i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038785i[GDBST ] found breakpoint at 7ef2
+07781038785i[GDBST ] stopped with ac1
+07781038785i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038785i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038785i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038785i[GDBST ] addr 0000000000007ec0 len 40
+07781038785i[GDBST ] addr 0000000000007ef3 len 1
+07781038785i[GDBST ] addr 0000000000007ef3 len 1
+07781038785i[GDBST ] addr 0000000000007ef3 len 9
+07781038785i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038785i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038785i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038785i[GDBST ] stepping
+07781038786i[GDBST ] stopped with ac2
+07781038786i[GDBST ] addr 0000000000007ef5 len 1
+07781038786i[GDBST ] addr 0000000000007ef5 len 1
+07781038786i[GDBST ] addr 0000000000007ef5 len 9
+07781038786i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038786i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038786i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038786i[GDBST ] addr 0000000000007ec0 len 40
+07781038786i[GDBST ] addr 0000000000007ef5 len 1
+07781038786i[GDBST ] addr 0000000000007ef5 len 1
+07781038786i[GDBST ] addr 0000000000007ef5 len 9
+07781038786i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038786i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038786i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038786i[GDBST ] stepping
+07781038787i[GDBST ] stopped with ac2
+07781038787i[GDBST ] addr 0000000000007ef7 len 1
+07781038787i[GDBST ] addr 0000000000007ef7 len 1
+07781038787i[GDBST ] addr 0000000000007ef7 len 9
+07781038787i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038787i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038787i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038787i[GDBST ] addr 0000000000007ec0 len 40
+07781038787i[GDBST ] addr 0000000000007ef7 len 1
+07781038787i[GDBST ] addr 0000000000007ef7 len 1
+07781038787i[GDBST ] addr 0000000000007ef7 len 9
+07781038787i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038787i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038787i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038787i[GDBST ] stepping
+07781038788i[GDBST ] stopped with ac2
+07781038788i[GDBST ] addr 0000000000007ef9 len 1
+07781038788i[GDBST ] addr 0000000000007ef9 len 1
+07781038788i[GDBST ] addr 0000000000007ef9 len 9
+07781038788i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038788i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038788i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038788i[GDBST ] addr 0000000000007ec0 len 40
+07781038788i[GDBST ] addr 0000000000007ef9 len 1
+07781038788i[GDBST ] addr 0000000000007ef9 len 1
+07781038788i[GDBST ] addr 0000000000007ef9 len 9
+07781038788i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038788i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038788i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038788i[GDBST ] stepping
+07781038789i[GDBST ] stopped with ac2
+07781038789i[GDBST ] addr 0000000000007efb len 1
+07781038789i[GDBST ] addr 0000000000007efb len 1
+07781038789i[GDBST ] addr 0000000000007efb len 9
+07781038789i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038789i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038789i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038789i[GDBST ] addr 0000000000007ec0 len 40
+07781038789i[GDBST ] addr 0000000000007efb len 1
+07781038789i[GDBST ] addr 0000000000007efb len 1
+07781038789i[GDBST ] addr 0000000000007efb len 9
+07781038789i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038789i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038789i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038789i[GDBST ] stepping
+07781038790i[GDBST ] stopped with ac2
+07781038790i[GDBST ] addr 0000000000007efd len 1
+07781038790i[GDBST ] addr 0000000000007efd len 1
+07781038790i[GDBST ] addr 0000000000007efd len 9
+07781038790i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038790i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038790i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038790i[GDBST ] addr 0000000000007ec0 len 40
+07781038790i[GDBST ] addr 0000000000007efd len 1
+07781038790i[GDBST ] addr 0000000000007efd len 1
+07781038790i[GDBST ] addr 0000000000007efd len 9
+07781038790i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038790i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038790i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038790i[GDBST ] stepping
+07781038791i[GDBST ] stopped with ac2
+07781038791i[GDBST ] addr 0000000000007eff len 1
+07781038791i[GDBST ] addr 0000000000007eff len 1
+07781038791i[GDBST ] addr 0000000000007eff len 9
+07781038791i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038791i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038791i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038791i[GDBST ] addr 0000000000007ec0 len 40
+07781038791i[GDBST ] addr 0000000000007eff len 1
+07781038791i[GDBST ] addr 0000000000007eff len 1
+07781038791i[GDBST ] addr 0000000000007eff len 9
+07781038791i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038791i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038791i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038791i[GDBST ] stepping
+07781038792i[GDBST ] stopped with ac2
+07781038792i[GDBST ] addr 0000000000007f00 len 1
+07781038792i[GDBST ] addr 0000000000007f00 len 1
+07781038792i[GDBST ] addr 0000000000007f00 len 9
+07781038792i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038792i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038792i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038792i[GDBST ] addr 0000000000007f00 len 40
+07781038792i[GDBST ] addr 0000000000007f00 len 1
+07781038792i[GDBST ] addr 0000000000007f00 len 1
+07781038792i[GDBST ] addr 0000000000007f00 len 9
+07781038792i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038792i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038792i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038792i[GDBST ] stepping
+07781038793i[GDBST ] stopped with ac2
+07781038793i[GDBST ] addr 0000000000007e0a len 1
+07781038793i[GDBST ] addr 0000000000007e0a len 1
+07781038793i[GDBST ] addr 0000000000007e0a len 9
+07781038793i[GDBST ] addr 0000000000007bc0 len 40
+07781038793i[GDBST ] addr 0000000000100c00 len 40
+07781038793i[GDBST ] addr 0000000000100c40 len 40
+07781038793i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038793i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038793i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038793i[GDBST ] addr 0000000000007e00 len 40
+07781038793i[GDBST ] addr 0000000000007e0a len 1
+07781038793i[GDBST ] addr 0000000000007e0a len 1
+07781038793i[GDBST ] addr 0000000000007e0a len 9
+07781038793i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038793i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038793i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038793i[GDBST ] stepping
+07781038794i[GDBST ] stopped with ac2
+07781038794i[GDBST ] addr 000000000000e988 len 1
+07781038794i[GDBST ] addr 000000000000e988 len 1
+07781038794i[GDBST ] addr 000000000000e988 len 9
+07781038794i[GDBST ] addr 0000000000007bc0 len 40
+07781038794i[GDBST ] addr 0c5c020200007e0a len 9
+07781038794i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038794i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038794i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038794i[GDBST ] addr 000000000000e980 len 40
+07781038794i[GDBST ] addr 000000000000e988 len 1
+07781038794i[GDBST ] addr 000000000000e988 len 1
+07781038794i[GDBST ] addr 000000000000e988 len 9
+07781038794i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038794i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038794i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038794i[GDBST ] stepping
+07781038795i[GDBST ] stopped with ac2
+07781038795i[GDBST ] addr 000000000000e989 len 1
+07781038795i[GDBST ] addr 000000000000e989 len 1
+07781038795i[GDBST ] addr 000000000000e989 len 9
+07781038795i[GDBST ] addr 0000000000007bc0 len 40
+07781038795i[GDBST ] addr 020200007e0a0000 len 9
+07781038795i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038795i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038795i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038795i[GDBST ] addr 000000000000e980 len 40
+07781038795i[GDBST ] addr 000000000000e989 len 1
+07781038795i[GDBST ] addr 000000000000e989 len 1
+07781038795i[GDBST ] addr 000000000000e989 len 9
+07781038795i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038795i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038795i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038795i[GDBST ] stepping
+07781038796i[GDBST ] stopped with ac2
+07781038796i[GDBST ] addr 000000000000e98b len 1
+07781038796i[GDBST ] addr 000000000000e98b len 1
+07781038796i[GDBST ] addr 000000000000e98b len 9
+07781038796i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038796i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038796i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038796i[GDBST ] addr 000000000000e980 len 40
+07781038796i[GDBST ] addr 000000000000e98b len 1
+07781038796i[GDBST ] addr 000000000000e98b len 1
+07781038796i[GDBST ] addr 000000000000e98b len 9
+07781038796i[GDBST ] Setting breakpoint at 0000000000007ec9
+07781038796i[GDBST ] Setting breakpoint at 0000000000007ef2
+07781038796i[GDBST ] Setting breakpoint at 0000000000100c5e
+07781038796i[GDBST ] stepping
+07781038797i[GDBST ] stopped with ac2
+07781038797i[GDBST ] addr 000000000000e98d len 1
+07781038797i[GDBST ] addr 000000000000e98d len 1
+07781038797i[GDBST ] addr 000000000000e98d len 9
+07781038797i[GDBST ] Removing breakpoint at 0000000000007ec9
+07781038797i[GDBST ] Removing breakpoint at 0000000000007ef2
+07781038797i[GDBST ] Removing breakpoint at 0000000000100c5e
+07781038797i[GDBST ] addr 000000000000e980 len 40
+07781038797i[GDBST ] addr 000000000000e98d len 1
+07781038797i[GDBST ] addr 000000000000e98d len 1
+07781038797i[GDBST ] addr 000000000000e98d len 9
+07781038797i[GDBST ] addr 0000000000007f00 len 40
+07781038797p[GDBST ] >>PANIC<< Debugger asked us to quit
+07781038797i[CPU0  ] CPU is in real mode (active)
+07781038797i[CPU0  ] CS.mode = 16 bit
+07781038797i[CPU0  ] SS.mode = 16 bit
+07781038797i[CPU0  ] EFER   = 0x00000000
+07781038797i[CPU0  ] | EAX=600000ad  EBX=0001a000  ECX=c0000080  EDX=00000000
+07781038797i[CPU0  ] | ESP=00007bef  EBP=00007bcf  ESI=00100a60  EDI=00007f19
+07781038797i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af pf cf
+07781038797i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+07781038797i[CPU0  ] |  CS:f000( 0003| 0|  0) 000f0000 0000ffff 0 0
+07781038797i[CPU0  ] |  DS:0000( 0006| 0|  0) 00000000 0000ffff 0 0
+07781038797i[CPU0  ] |  SS:0000( 0006| 0|  0) 00000000 0000ffff 0 0
+07781038797i[CPU0  ] |  ES:0000( 0006| 0|  0) 00000000 0000ffff 0 0
+07781038797i[CPU0  ] |  FS:0000( 0006| 0|  0) 00000000 0000ffff 0 0
+07781038797i[CPU0  ] |  GS:0000( 0006| 0|  0) 00000000 0000ffff 0 0
+07781038797i[CPU0  ] | EIP=0000e98d (0000e98d)
+07781038797i[CPU0  ] | CR0=0x60000010 CR2=0x00000000
+07781038797i[CPU0  ] | CR3=0x00018000 CR4=0x00000000
+07781038797i[CPU0  ] 0x000000000000e98d>> mov al, 0x0b : B00B
+07781038797i[CMOS  ] Last time is 1677660634 (Wed Mar  1 10:50:34 2023)
+07781038797i[XGUI  ] Exit
+07781038797i[      ] restoring default signal behavior
+07781038797i[SIM   ] quit_sim called with exit code 1
