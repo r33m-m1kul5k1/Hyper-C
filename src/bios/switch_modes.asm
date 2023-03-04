@@ -82,7 +82,6 @@ protected_to_long_lower_memory:
     or eax, PAGING
     mov cr0, eax
 
-    ; Note this far jump goes to the higher memory
     jmp gdt.IA32e_code_segment:REAL_MODE_RELOCATION(.long_mode)
 
 [bits 64]

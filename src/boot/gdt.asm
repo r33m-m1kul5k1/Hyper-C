@@ -58,7 +58,7 @@ gdt:
     db 0x00           ; base 24-31
 
 .pointer:
-    dw .pointer - gdt - 1 ; limit (the size of our gdt) 
+    dw .pointer - gdt - 1 ; limit (the size the gdt) 
     dq gdt
 
 

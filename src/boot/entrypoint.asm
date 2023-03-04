@@ -13,7 +13,7 @@ section .data
 
 section .text
 %include "src/boot/macros.asm"
-%include "src/bios/real_mode.asm"
+
 
 [bits 32]
 _start:
@@ -62,7 +62,6 @@ protected_to_long:
     or eax, PAGING
     mov cr0, eax
 
-    ; Note this far jump goes to the higher memory
     jmp gdt.IA32e_code_segment:.long_mode
 
 [bits 64]
@@ -74,5 +73,6 @@ protected_to_long:
     ret
 ;------------------------------------------------------------------
 
+%include "src/bios/real_mode.asm"
 section .multiboot
 %include "src/boot/multiboot.asm"

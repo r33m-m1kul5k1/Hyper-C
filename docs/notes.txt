@@ -22,3 +22,16 @@ reasons:
 4. maybe protected mode must use paging?
 
 the stack address was higher then accessible in real mode :)
+
+
+the bug:
+
+when a bios interrupt called ip frezzes on the same line.
+
+situation:
+I'm in real mode after jumping protected -> long -> protected (without paing and pae) -> real 
+
+1. my host computer is not able to interact with the bios to qemu
+2. the gdt is not loaded :()? yes but gdb is not able to show it.
+3. am I overriding some important code? most likely not.
+4. kvm on archlinux doesn't support interrupts

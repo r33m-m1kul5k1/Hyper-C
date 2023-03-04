@@ -26,9 +26,9 @@ void initialize_vmm() {
     LOG_INFO("initializing machine");
     
 
-    // initialize_bios();
-    // load_mbr();
-    ASSERT((1 != 1));
+    initialize_bios();
+    load_mbr();
+
     enter_vmx_root();
 
 }
@@ -50,7 +50,7 @@ void initialize_bios() {
         (void*)real_mode_start, 
         (size_t)(real_mode_end - real_mode_start)
     );
-
+    
     // tests communication
     real_mode_callback(real_mode_smile);
 }
