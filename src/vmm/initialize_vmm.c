@@ -23,12 +23,12 @@ void load_mbr();
 void initialize_vmm() {
     
     set_log_level(DEBUG_LEVEL);
-    log_info("initializing machine");
+    LOG_INFO("initializing machine");
     
 
     // initialize_bios();
     // load_mbr();
-
+    ASSERT((1 != 1));
     enter_vmx_root();
 
 }
@@ -38,7 +38,7 @@ Initialize communication with the bios
 */
 void initialize_bios() {
     
-    log_info(
+    LOG_INFO(
         "relocating real mode code from [%p - %p] to the 'low memory' at %x", 
         real_mode_start, 
         real_mode_end, 
@@ -75,6 +75,6 @@ void load_mbr() {
 
     real_mode_callback(read_disk);
 
-    log_info("mbr: %s", mbr);
+    LOG_INFO("mbr: %s", mbr);
     
 }

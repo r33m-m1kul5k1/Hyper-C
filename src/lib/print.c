@@ -76,7 +76,7 @@ void vsprintf(char *str, const char *fmt, va_list args)
         {
         
         case 'c':
-            log_debug("printing a character");
+            LOG_DEBUG("printing a character");
             c = (char)va_arg(args, int);
             *str = c;
             str++;
@@ -113,7 +113,7 @@ void vsprintf(char *str, const char *fmt, va_list args)
             break;
             
         default:
-            log_error("unknown format character");
+            LOG_ERROR("unknown format character");
             break;
         }
     }
