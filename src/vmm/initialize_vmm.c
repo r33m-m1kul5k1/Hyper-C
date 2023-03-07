@@ -29,7 +29,7 @@ void initialize_vmm() {
     // load_mbr();
 
     enter_vmx_root();
-
+    configure_vmcs();
 }
 
 /*
