@@ -1,6 +1,5 @@
 #include "lib/utils.h"
 #include "lib/log.h"
-#include "hardware/instructions.h"
 #include "hardware/types.h"
 #include "vmx.h"
 
@@ -26,8 +25,8 @@ void initialize_vmm() {
     LOG_INFO("initializing machine");
     
 
-    initialize_bios();
-    load_mbr();
+    // initialize_bios();
+    // load_mbr();
 
     enter_vmx_root();
 

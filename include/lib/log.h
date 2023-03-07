@@ -10,9 +10,9 @@ typedef enum log_level {
 } log_level;
 
 #define PANIC() {                     \
-    LOG_FATAL("Hypervisor paniced");  \
+    LOG_FATAL("Hypervisor Panic");    \
     while (1) {                       \
-        asm volatile("hlt;");         \
+        asm volatile("hlt");          \
     }                                 \
 }
 
