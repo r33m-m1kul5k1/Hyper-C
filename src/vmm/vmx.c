@@ -17,7 +17,6 @@
 #define IA32_VMX_CR4_FIXED1 0x489
 
 #define IA32_VMX_BASIC 0x480
-#define SHADOW_VMCS_INDICATOR 31
 
 #define IA32_FEATURE_CONTROL 0x3a
 #define IA32_FEATURE_CONTROL_LOCK_BIT (1 << 0)
@@ -28,8 +27,6 @@
 #define VMCS_REGION_ADDRESS 0x11000
 #define PAGE_FRAME_SIZE 0x1000
 
-#define TRUE 1
-#define FALSE !TRUE
 
 void enter_vmx_root() {    
     // Note that PE & PG should be 0 with "unrestricted guest".
@@ -72,17 +69,12 @@ void enter_vmx_root() {
 }
 
 void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
-    int revision_identifier = read_msr(IA32_VMX_BASIC) & 0xFFFFFFFF;
 
-    LOG_DEBUG("revision identifier: %x", revision_identifier);
     memset((void*)vmxon_region, 0, PAGE_FRAME_SIZE);
     memset((void*)vmcs_region, 0, PAGE_FRAME_SIZE);
 
-    *(dword_t*)vmxon_region = revision_identifier;
-    vmxon_region[SHADOW_VMCS_INDICATOR] = FALSE;
-    
-    *(dword_t*)vmcs_region = revision_identifier;
-    vmcs_region[SHADOW_VMCS_INDICATOR] = FALSE;
+    *(dword_t*)vmxon_region = read_msr(IA32_VMX_BASIC);
+    *(dword_t*)vmcs_region = read_msr(IA32_VMX_BASIC);
 }
 
 void configure_vmcs() {
