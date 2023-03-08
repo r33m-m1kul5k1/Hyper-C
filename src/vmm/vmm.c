@@ -67,9 +67,9 @@ void enter_vmx_root() {
     ASSERT(vmptrld((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
     
     LOG_INFO("entered VMX-root operation");
-    qword_t reason = 0;
-    vmread(VMCS_VM_EXIT_REASON, &reason);
-    LOG_INFO("exit reason: %d", reason);
+
+    
+    LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 
 void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
@@ -85,8 +85,8 @@ void configure_vmcs() {
 }
 
 vm_instruction_error_t check_vm_instruction_error() {
-    vm_instruction_error_t error_code = UNDEFINE_VM_INSTRUCTION_ERROR;
-    vmread(VMCS_VM_INSTRUCTION_ERROR, (qword_t *)&error_code);
+    qword_t error_code = UNDEFINE_VM_INSTRUCTION_ERROR;
+    vmread(VMCS_VM_INSTRUCTION_ERROR, &error_code);
 
-    return error_code;
+    return (vm_instruction_error_t)error_code;
 }
