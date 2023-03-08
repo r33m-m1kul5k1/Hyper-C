@@ -5,7 +5,7 @@
 
 static inline vmx_error_codes_t vmxon(void *vmxon_region) {
     qword_t flags;
-    asm volatile("vmxon %1; pushf; pop %0" : "=r" (flags) : "m" (*(char*)vmxon_region));
+    asm volatile("vmxon %1; pushf; pop %0" : "=r" (flags) : "m" (vmxon_region));
 
     if (flags & CARRY_FLAG)
         return vm_fail_invalid;
@@ -17,7 +17,7 @@ static inline vmx_error_codes_t vmxon(void *vmxon_region) {
 
 static inline vmx_error_codes_t vmclear(void *vmcs_region) {
     qword_t flags;
-    asm volatile("vmclear %1; pushf; pop %0" : "=r" (flags) : "m" (*(char*)vmcs_region));
+    asm volatile("vmclear %1; pushf; pop %0" : "=r" (flags) : "m" (vmcs_region));
     
     if (flags & CARRY_FLAG)
         return vm_fail_invalid;
@@ -28,7 +28,7 @@ static inline vmx_error_codes_t vmclear(void *vmcs_region) {
 
 static inline vmx_error_codes_t vmptrld(void *vmcs_region) {
     qword_t flags;
-    asm volatile("vmptrld %1; pushf; pop %0" : "=r" (flags) : "m" (*(char*)vmcs_region));
+    asm volatile("vmptrld %1; pushf; pop %0" : "=r" (flags) : "m" (vmcs_region));
     
     if (flags & CARRY_FLAG)
         return vm_fail_invalid;
