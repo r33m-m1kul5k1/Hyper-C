@@ -1,25 +1,16 @@
-#include "vmm.h"
+#include "vmm/vmm.h"
 #include "hardware/registers.h"
 #include "hardware/vmcs.h"
 #include "hardware/types.h"
 #include "hardware/vmx.h"
 #include "hardware/error_codes.h"
+#include "hardware/msr.h"
 #include "lib/log.h"
 #include "lib/utils.h"
-
 
 #define CR4_VMX_ENABLE (1 << 13)
 #define CR0_NE_ENABLE (1 << 5)
 
-// FIXED0 -> fixed ones
-#define IA32_VMX_CR0_FIXED0 0x486
-#define IA32_VMX_CR0_FIXED1 0x487
-#define IA32_VMX_CR4_FIXED0 0x488
-#define IA32_VMX_CR4_FIXED1 0x489
-
-#define IA32_VMX_BASIC 0x480
-
-#define IA32_FEATURE_CONTROL 0x3a
 #define IA32_FEATURE_CONTROL_LOCK_BIT (1 << 0)
 #define IA32_FEATURE_CONTROL_ENABLE_VMXON_INSIDE_SMX (1 << 1)
 #define IA32_FEATURE_CONTROL_ENABLE_VMXON_OUTSIDE_SMX (1 << 2)
@@ -30,12 +21,13 @@
 
 vm_instruction_error_t check_vm_instruction_error();
 
+
 void enter_vmx_root() {    
     // Note that PE & PG should be 0 with "unrestricted guest".
-    write_cr0((read_cr0() | CR0_NE_ENABLE | read_msr(IA32_VMX_CR0_FIXED0)) & read_msr(IA32_VMX_CR0_FIXED1));
-    write_cr4((read_cr4() | CR4_VMX_ENABLE | read_msr(IA32_VMX_CR4_FIXED0)) & read_msr(IA32_VMX_CR4_FIXED1));
+    write_cr0((read_cr0() | CR0_NE_ENABLE | read_msr(MSR_IA32_VMX_CR0_FIXED0)) & read_msr(MSR_IA32_VMX_CR0_FIXED1));
+    write_cr4((read_cr4() | CR4_VMX_ENABLE | read_msr(MSR_IA32_VMX_CR4_FIXED0)) & read_msr(MSR_IA32_VMX_CR4_FIXED1));
 
-    int feature_control_msr = read_msr(IA32_FEATURE_CONTROL);
+    int feature_control_msr = read_msr(MSR_IA32_FEATURE_CONTROL);
     LOG_DEBUG("IA32_FEATURE_CONTROL: %b", feature_control_msr);
 
     if (feature_control_msr & IA32_FEATURE_CONTROL_LOCK_BIT) {
@@ -49,7 +41,7 @@ void enter_vmx_root() {
         }
     } else {
         write_msr(
-            IA32_FEATURE_CONTROL,
+            MSR_IA32_FEATURE_CONTROL,
             feature_control_msr | 
             IA32_FEATURE_CONTROL_LOCK_BIT |
             IA32_FEATURE_CONTROL_ENABLE_VMXON_INSIDE_SMX | 
@@ -77,11 +69,13 @@ void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
     memset((void *)vmxon_region, 0, PAGE_FRAME_SIZE);
     memset((void *)vmcs_region, 0, PAGE_FRAME_SIZE);
 
-    *(dword_t *)vmxon_region = read_msr(IA32_VMX_BASIC);
-    *(dword_t *)vmcs_region = read_msr(IA32_VMX_BASIC);
+    *(dword_t *)vmxon_region = read_msr(MSR_IA32_VMX_BASIC);
+    *(dword_t *)vmcs_region = read_msr(MSR_IA32_VMX_BASIC);
 }
 
 void configure_vmcs() {
+    // vm execution control fields
+    
 }
 
 vm_instruction_error_t check_vm_instruction_error() {
