@@ -1,0 +1,195 @@
+// Encoding in VMCS (Appendix B.3)
+#pragma once
+
+enum {
+    VMCS_VIRTUAL_PROCESSOR_ID            = 0x00000000,
+    VMCS_POSTED_INTR_NOTIFICATION_VECTOR = 0x00000002,
+    VMCS_EPTP_INDEX                      = 0x00000004,
+    VMCS_GUEST_ES_SELECTOR               = 0x00000800,
+    VMCS_GUEST_CS_SELECTOR               = 0x00000802,
+    VMCS_GUEST_SS_SELECTOR               = 0x00000804,
+    VMCS_GUEST_DS_SELECTOR               = 0x00000806,
+    VMCS_GUEST_FS_SELECTOR               = 0x00000808,
+    VMCS_GUEST_GS_SELECTOR               = 0x0000080a,
+    VMCS_GUEST_LDTR_SELECTOR             = 0x0000080c,
+    VMCS_GUEST_TR_SELECTOR               = 0x0000080e,
+    VMCS_GUEST_INTR_STATUS               = 0x00000810,
+    VMCS_GUEST_PML_INDEX                 = 0x00000812,
+    VMCS_HOST_ES_SELECTOR                = 0x00000c00,
+    VMCS_HOST_CS_SELECTOR                = 0x00000c02,
+    VMCS_HOST_SS_SELECTOR                = 0x00000c04,
+    VMCS_HOST_DS_SELECTOR                = 0x00000c06,
+    VMCS_HOST_FS_SELECTOR                = 0x00000c08,
+    VMCS_HOST_GS_SELECTOR                = 0x00000c0a,
+    VMCS_HOST_TR_SELECTOR                = 0x00000c0c,
+    VMCS_IO_BITMAP_A                     = 0x00002000,
+    VMCS_IO_BITMAP_B                     = 0x00002002,
+    VMCS_MSR_BITMAP                      = 0x00002004,
+    VMCS_VM_EXIT_MSR_STORE_ADDR          = 0x00002006,
+    VMCS_VM_EXIT_MSR_LOAD_ADDR           = 0x00002008,
+    VMCS_VM_ENTRY_MSR_LOAD_ADDR          = 0x0000200a,
+    VMCS_PML_ADDRESS                     = 0x0000200e,
+    VMCS_TSC_OFFSET                      = 0x00002010,
+    VMCS_TSC_OFFSET_HIGH                 = 0x00002011,
+    VMCS_VIRTUAL_APIC_PAGE_ADDR          = 0x00002012,
+    VMCS_APIC_ACCESS_ADDR                = 0x00002014,
+    VMCS_PI_DESC_ADDR                    = 0x00002016,
+    VMCS_VM_FUNCTION_CONTROL             = 0x00002018,
+    VMCS_EPT_POINTER                     = 0x0000201a,
+    VMCS_EOI_EXIT_BITMAP0                = 0x0000201c,
+    VMCS_EPTP_LIST_ADDR                  = 0x00002024,
+    VMCS_VMREAD_BITMAP                   = 0x00002026,
+    VMCS_VMWRITE_BITMAP                  = 0x00002028,
+    VMCS_VIRT_EXCEPTION_INFO             = 0x0000202a,
+    VMCS_XSS_EXIT_BITMAP                 = 0x0000202c,
+    VMCS_TSC_MULTIPLIER                  = 0x00002032,
+    VMCS_GUEST_PHYSICAL_ADDRESS          = 0x00002400,
+    VMCS_VMCS_LINK_POINTER               = 0x00002800,
+    VMCS_GUEST_IA32_DEBUGCTL             = 0x00002802,
+    VMCS_GUEST_IA32_DEBUGCTL_HIGH        = 0x00002803,
+    VMCS_GUEST_PAT                       = 0x00002804,
+    VMCS_GUEST_EFER                      = 0x00002806,
+    VMCS_GUEST_PERF_GLOBAL_CTRL          = 0x00002808,
+    VMCS_GUEST_PDPTE0                    = 0x0000280a,
+    VMCS_GUEST_BNDCFGS                   = 0x00002812,
+    VMCS_HOST_PAT                        = 0x00002c00,
+    VMCS_HOST_EFER                       = 0x00002c02,
+    VMCS_HOST_PERF_GLOBAL_CTRL           = 0x00002c04,
+    VMCS_PIN_BASED_VM_EXEC_CONTROL       = 0x00004000,
+    VMCS_CPU_BASED_VM_EXEC_CONTROL       = 0x00004002,
+    VMCS_EXCEPTION_BITMAP                = 0x00004004,
+    VMCS_PAGE_FAULT_ERROR_CODE_MASK      = 0x00004006,
+    VMCS_PAGE_FAULT_ERROR_CODE_MATCH     = 0x00004008,
+    VMCS_CR3_TARGET_COUNT                = 0x0000400a,
+    VMCS_VM_EXIT_CONTROLS                = 0x0000400c,
+    VMCS_VM_EXIT_MSR_STORE_COUNT         = 0x0000400e,
+    VMCS_VM_EXIT_MSR_LOAD_COUNT          = 0x00004010,
+    VMCS_VM_ENTRY_CONTROLS               = 0x00004012,
+    VMCS_VM_ENTRY_MSR_LOAD_COUNT         = 0x00004014,
+    VMCS_VM_ENTRY_INTR_INFO              = 0x00004016,
+    VMCS_VM_ENTRY_EXCEPTION_ERROR_CODE   = 0x00004018,
+    VMCS_VM_ENTRY_INSTRUCTION_LEN        = 0x0000401a,
+    VMCS_TPR_THRESHOLD                   = 0x0000401c,
+    VMCS_SECONDARY_VM_EXEC_CONTROL       = 0x0000401e,
+    VMCS_PLE_GAP                         = 0x00004020,
+    VMCS_PLE_WINDOW                      = 0x00004022,
+    VMCS_VM_INSTRUCTION_ERROR            = 0x00004400,
+    VMCS_VM_EXIT_REASON                  = 0x00004402,
+    VMCS_VM_EXIT_INTR_INFO               = 0x00004404,
+    VMCS_VM_EXIT_INTR_ERROR_CODE         = 0x00004406,
+    VMCS_IDT_VECTORING_INFO              = 0x00004408,
+    VMCS_IDT_VECTORING_ERROR_CODE        = 0x0000440a,
+    VMCS_VM_EXIT_INSTRUCTION_LEN         = 0x0000440c,
+    VMCS_VMX_INSTRUCTION_INFO            = 0x0000440e,
+    VMCS_GUEST_ES_LIMIT                  = 0x00004800,
+    VMCS_GUEST_CS_LIMIT                  = 0x00004802,
+    VMCS_GUEST_SS_LIMIT                  = 0x00004804,
+    VMCS_GUEST_DS_LIMIT                  = 0x00004806,
+    VMCS_GUEST_FS_LIMIT                  = 0x00004808,
+    VMCS_GUEST_GS_LIMIT                  = 0x0000480a,
+    VMCS_GUEST_LDTR_LIMIT                = 0x0000480c,
+    VMCS_GUEST_TR_LIMIT                  = 0x0000480e,
+    VMCS_GUEST_GDTR_LIMIT                = 0x00004810,
+    VMCS_GUEST_IDTR_LIMIT                = 0x00004812,
+    VMCS_GUEST_ES_AR_BYTES               = 0x00004814,
+    VMCS_GUEST_CS_AR_BYTES               = 0x00004816,
+    VMCS_GUEST_SS_AR_BYTES               = 0x00004818,
+    VMCS_GUEST_DS_AR_BYTES               = 0x0000481a,
+    VMCS_GUEST_FS_AR_BYTES               = 0x0000481c,
+    VMCS_GUEST_GS_AR_BYTES               = 0x0000481e,
+    VMCS_GUEST_LDTR_AR_BYTES             = 0x00004820,
+    VMCS_GUEST_TR_AR_BYTES               = 0x00004822,
+    VMCS_GUEST_INTERRUPTIBILITY_INFO     = 0x00004824,
+    VMCS_GUEST_ACTIVITY_STATE            = 0x00004826,
+    VMCS_GUEST_SMBASE                    = 0x00004828,
+    VMCS_GUEST_SYSENTER_CS               = 0x0000482a,
+    VMCS_GUEST_PREEMPTION_TIMER          = 0x0000482e,
+    VMCS_HOST_SYSENTER_CS                = 0x00004c00,
+    VMCS_CR0_GUEST_HOST_MASK             = 0x00006000,
+    VMCS_CR4_GUEST_HOST_MASK             = 0x00006002,
+    VMCS_CR0_READ_SHADOW                 = 0x00006004,
+    VMCS_CR4_READ_SHADOW                 = 0x00006006,
+    VMCS_CR3_TARGET_VALUE0               = 0x00006008,
+    VMCS_EXIT_QUALIFICATION              = 0x00006400,
+    VMCS_GUEST_LINEAR_ADDRESS            = 0x0000640a,
+    VMCS_GUEST_CR0                       = 0x00006800,
+    VMCS_GUEST_CR3                       = 0x00006802,
+    VMCS_GUEST_CR4                       = 0x00006804,
+    VMCS_GUEST_ES_BASE                   = 0x00006806,
+    VMCS_GUEST_CS_BASE                   = 0x00006808,
+    VMCS_GUEST_SS_BASE                   = 0x0000680a,
+    VMCS_GUEST_DS_BASE                   = 0x0000680c,
+    VMCS_GUEST_FS_BASE                   = 0x0000680e,
+    VMCS_GUEST_GS_BASE                   = 0x00006810,
+    VMCS_GUEST_LDTR_BASE                 = 0x00006812,
+    VMCS_GUEST_TR_BASE                   = 0x00006814,
+    VMCS_GUEST_GDTR_BASE                 = 0x00006816,
+    VMCS_GUEST_IDTR_BASE                 = 0x00006818,
+    VMCS_GUEST_DR7                       = 0x0000681a,
+    VMCS_GUEST_RSP                       = 0x0000681c,
+    VMCS_GUEST_RIP                       = 0x0000681e,
+    VMCS_GUEST_RFLAGS                    = 0x00006820,
+    VMCS_GUEST_PENDING_DBG_EXCEPTIONS    = 0x00006822,
+    VMCS_GUEST_SYSENTER_ESP              = 0x00006824,
+    VMCS_GUEST_SYSENTER_EIP              = 0x00006826,
+    VMCS_HOST_CR0                        = 0x00006c00,
+    VMCS_HOST_CR3                        = 0x00006c02,
+    VMCS_HOST_CR4                        = 0x00006c04,
+    VMCS_HOST_FS_BASE                    = 0x00006c06,
+    VMCS_HOST_GS_BASE                    = 0x00006c08,
+    VMCS_HOST_TR_BASE                    = 0x00006c0a,
+    VMCS_HOST_GDTR_BASE                  = 0x00006c0c,
+    VMCS_HOST_IDTR_BASE                  = 0x00006c0e,
+    VMCS_HOST_SYSENTER_ESP               = 0x00006c10,
+    VMCS_HOST_SYSENTER_EIP               = 0x00006c12,
+    VMCS_HOST_RSP                        = 0x00006c14,
+    VMCS_HOST_RIP                        = 0x00006c16,
+};
+
+// vmcs control fields
+// primary controls
+#define CPU_BASED_USE_TSC_OFFSETING           0x00000008
+#define CPU_BASED_HLT_EXITING                 0x00000080
+#define CPU_BASED_INVLPG_EXITING              0x00000200
+#define CPU_BASED_MWAIT_EXITING               0x00000400
+#define CPU_BASED_RDPMC_EXITING               0x00000800
+#define CPU_BASED_RDTSC_EXITING               0x00001000
+#define CPU_BASED_CR3_LOAD_EXITING            0x00008000
+#define CPU_BASED_CR3_STORE_EXITING           0x00010000
+#define CPU_BASED_CR8_LOAD_EXITING            0x00080000
+#define CPU_BASED_CR8_STORE_EXITING           0x00100000
+#define CPU_BASED_TPR_SHADOW                  0x00200000
+#define CPU_BASED_VIRTUAL_NMI_PENDING         0x00400000
+#define CPU_BASED_MOV_DR_EXITING              0x00800000
+#define CPU_BASED_UNCOND_IO_EXITING           0x01000000
+#define CPU_BASED_ACTIVATE_IO_BITMAP          0x02000000
+#define CPU_BASED_MONITOR_TRAP_FLAG           0x08000000
+#define CPU_BASED_ACTIVATE_MSR_BITMAP         0x10000000
+#define CPU_BASED_MONITOR_EXITING             0x20000000
+#define CPU_BASED_PAUSE_EXITING               0x40000000
+#define CPU_BASED_ACTIVATE_SECONDARY_CONTROLS 0x80000000
+
+// secondary controls
+#define CPU_BASED_CTL2_ENABLE_EPT           0x2
+#define CPU_BASED_CTL2_RDTSCP               0x8
+#define CPU_BASED_CTL2_ENABLE_VPID          0x20
+#define CPU_BASED_CTL2_ENABLE_INVPCID       (1 << 12)
+#define CPU_BASED_CTL2_UNRESTRICTED_GUEST   0x80
+#define CPU_BASED_CTL2_ENABLE_VMFUNC        0x2000
+
+// vm entry controls
+#define VM_ENTRY_LOAD_DEBUG_CTLS        (1 << 2)
+#define VM_ENTRY_IA32E_MODE             0x00000200
+#define VM_ENTRY_SMM                    0x00000400
+#define VM_ENTRY_DEACT_DUAL_MONITOR     0x00000800
+#define VM_ENTRY_LOAD_GUEST_PAT         0x00004000
+#define VM_ENTRY_LOAD_EFER              (1 << 15)
+
+// vm exit controls
+#define VM_EXIT_LOAD_DEBUG_CTLS         (1 << 2)
+#define VM_EXIT_IA32E_MODE              0x00000200
+#define VM_EXIT_ACK_INTR_ON_EXIT        0x00008000
+#define VM_EXIT_SAVE_GUEST_PAT          0x00040000
+#define VM_EXIT_LOAD_HOST_PAT           0x00080000
+#define VM_EXIT_SAVE_EFER               (1 << 20)
+#define VM_EXIT_LOAD_EFER               (1 << 21)

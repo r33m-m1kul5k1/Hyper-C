@@ -35,3 +35,12 @@ I'm in real mode after jumping protected -> long -> protected (without paing and
 2. the gdt is not loaded :()? yes but gdb is not able to show it.
 3. am I overriding some important code? most likely not.
 4. kvm on archlinux doesn't support interrupts
+
+
+the bug:
+I create multiple definitions of an array of strings
+
+the reason:
+I include vmm.h twice, once for the vmm.c and once for initialize_host.c
+
+inside the vmm.h we need to include the error codes

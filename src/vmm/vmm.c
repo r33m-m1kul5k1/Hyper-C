@@ -1,7 +1,8 @@
-#include "vmx.h"
+#include "vmm.h"
 #include "hardware/registers.h"
-#include "hardware/vmx.h"
+#include "hardware/vmcs.h"
 #include "hardware/types.h"
+#include "hardware/vmx.h"
 #include "hardware/error_codes.h"
 #include "lib/log.h"
 #include "lib/utils.h"
@@ -27,6 +28,7 @@
 #define VMCS_REGION_ADDRESS 0x11000
 #define PAGE_FRAME_SIZE 0x1000
 
+vm_instruction_error_t check_vm_instruction_error();
 
 void enter_vmx_root() {    
     // Note that PE & PG should be 0 with "unrestricted guest".
@@ -43,8 +45,7 @@ void enter_vmx_root() {
         } else if (feature_control_msr & IA32_FEATURE_CONTROL_ENABLE_VMXON_OUTSIDE_SMX) {
             LOG_INFO("support of vmxon outside smx operation");
         } else {
-            LOG_INFO("no support for vmxon instruction");
-            PANIC();
+            PANIC("no support for vmxon instruction");
         }
     } else {
         write_msr(
@@ -59,23 +60,33 @@ void enter_vmx_root() {
     }
     
 
-    initialize_vmx_regions((char*)VMXON_REGION_ADDRESS, (char*)VMCS_REGION_ADDRESS);
+    initialize_vmx_regions((char *)VMXON_REGION_ADDRESS, (char *)VMCS_REGION_ADDRESS);
     
-    ASSERT(vmxon((void*)VMXON_REGION_ADDRESS) == vm_success);
-    ASSERT(vmclear((void*)VMCS_REGION_ADDRESS) == vm_success);
-    ASSERT(vmptrld((void*)VMCS_REGION_ADDRESS) == vm_success);
+    ASSERT(vmxon((void *)VMXON_REGION_ADDRESS) == VM_SUCCESS);
+    ASSERT(vmclear((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
+    ASSERT(vmptrld((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
     
     LOG_INFO("entered VMX-root operation");
+    qword_t reason = 0;
+    vmread(VMCS_VM_EXIT_REASON, &reason);
+    LOG_INFO("exit reason: %d", reason);
 }
 
 void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
 
-    memset((void*)vmxon_region, 0, PAGE_FRAME_SIZE);
-    memset((void*)vmcs_region, 0, PAGE_FRAME_SIZE);
+    memset((void *)vmxon_region, 0, PAGE_FRAME_SIZE);
+    memset((void *)vmcs_region, 0, PAGE_FRAME_SIZE);
 
-    *(dword_t*)vmxon_region = read_msr(IA32_VMX_BASIC);
-    *(dword_t*)vmcs_region = read_msr(IA32_VMX_BASIC);
+    *(dword_t *)vmxon_region = read_msr(IA32_VMX_BASIC);
+    *(dword_t *)vmcs_region = read_msr(IA32_VMX_BASIC);
 }
 
 void configure_vmcs() {
+}
+
+vm_instruction_error_t check_vm_instruction_error() {
+    vm_instruction_error_t error_code = UNDEFINE_VM_INSTRUCTION_ERROR;
+    vmread(VMCS_VM_INSTRUCTION_ERROR, (qword_t *)&error_code);
+
+    return error_code;
 }

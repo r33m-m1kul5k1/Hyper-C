@@ -6,7 +6,7 @@ global real_mode_callback
 global read_disk
 global real_mode_smile
 
-extern initialize_vmm
+extern initialize_host
 
 section .data
 %include "src/boot/gdt.asm"
@@ -21,7 +21,7 @@ _start:
     call protected_to_long
 
 [bits 64]  
-    call initialize_vmm
+    call initialize_host
 
 after:
     hlt

@@ -1,7 +1,7 @@
+#include "vmm.h"
 #include "lib/utils.h"
 #include "lib/log.h"
 #include "hardware/types.h"
-#include "vmx.h"
 
 #define REAL_MODE_BASE_ADDRESS 0x7E00
 #define DAP_ADDRESS 0x500
@@ -19,7 +19,7 @@ void initialize_bios();
 void load_mbr();
 
 
-void initialize_vmm() {
+void initialize_host() {
     
     set_log_level(DEBUG_LEVEL);
     LOG_INFO("initializing machine");
