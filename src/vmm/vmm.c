@@ -59,7 +59,6 @@ void enter_vmx_root() {
     ASSERT(vmptrld((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
     
     LOG_INFO("entered VMX-root operation");
-
     
     LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
@@ -76,6 +75,18 @@ void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
 void configure_vmcs() {
     // vm execution control fields
     
+    dword_t default1 = read_msr(MSR_IA32_VMX_PINBASED_CTLS);
+    dword_t default0 = read_msr(MSR_IA32_VMX_PINBASED_CTLS) >> 32;
+
+    if ((read_msr(MSR_IA32_VMX_BASIC) & (1LL << 55)) >> 55) {
+        default1 = read_msr(MSR_IA32_VMX_TRUE_PINBASED_CTLS);
+        default0 = read_msr(MSR_IA32_VMX_TRUE_PINBASED_CTLS) >> 32;
+        LOG_DEBUG("defualt1 at IA32_VMX_TRUE_PINBASED_CTLS: %b", default1);
+        // bits 1, 2, 4 must contain inside default1
+        ASSERT(default1 >> 1 && default1 >> 2 && default1 >> 4);
+    }
+    vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default1 & default0);
+
 }
 
 vm_instruction_error_t check_vm_instruction_error() {

@@ -1,6 +1,8 @@
 #pragma once
 #include <stddef.h>
 
+#define BIT_N(value, n) (value & 1LL << n) >> n
+
 void strcpy(char *dst, const char *src);
 int strcmp(const char *str1, const char *str2);
 int strlen(const char *str);

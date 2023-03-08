@@ -29,6 +29,7 @@ void initialize_host() {
     // load_mbr();
 
     enter_vmx_root();
+    ASSERT(BIT_N(0b0010, 0));
     configure_vmcs();
 }
 
