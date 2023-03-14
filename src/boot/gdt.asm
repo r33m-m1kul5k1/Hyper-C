@@ -1,6 +1,5 @@
 ; https://wiki.osdev.org/Global_Descriptor_Table
 
-
 gdt:
     dq 0
 .IA32e_code_segment: equ $ - gdt

@@ -18,9 +18,12 @@
 #define VMXON_REGION_ADDRESS 0x10000
 #define VMCS_REGION_ADDRESS 0x11000
 #define PAGE_FRAME_SIZE 0x1000
+#define CANONICAL_ADDRESS 0xffffffff
+#define CANONICAL_SELECTOR 0xff
 
 vm_instruction_error_t check_vm_instruction_error();
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
+void vm_exit_handler();
 
 
 void enter_vmx_root() {    
@@ -86,11 +89,37 @@ void configure_vmcs() {
 
     // VM-exit control fields
     default_bits = get_default_bits(MSR_IA32_VMX_EXIT_CTLS, MSR_IA32_VMX_TRUE_EXIT_CTLS);
-    vmwrite(VMCS_VM_EXIT_CONTROLS, default_bits);
+    vmwrite(VMCS_VM_EXIT_CONTROLS, default_bits | VM_EXIT_IA32E_MODE);
 
     // VM-entry control fields
     default_bits = get_default_bits(MSR_IA32_VMX_ENTRY_CTLS, MSR_IA32_VMX_TRUE_ENTRY_CTLS);
-    vmwrite(VMCS_VM_ENTRY_CONTROLS, default_bits);
+    vmwrite(VMCS_VM_ENTRY_CONTROLS, default_bits | VM_ENTRY_IA32E_MODE);
+
+    // Host state area
+    vmwrite(VMCS_HOST_CR0, read_cr0());
+    vmwrite(VMCS_HOST_CR4, read_cr4());
+    vmwrite(VMCS_HOST_CR3, read_cr3());
+    vmwrite(VMCS_HOST_RIP, vm_exit_handler);
+
+    vmwrite(VMCS_HOST_SYSENTER_CS, CANONICAL_SELECTOR);
+    vmwrite(VMCS_HOST_SYSENTER_EIP, CANONICAL_ADDRESS);
+    vmwrite(VMCS_HOST_SYSENTER_ESP, CANONICAL_ADDRESS);
+    
+    vmwrite(VMCS_HOST_CS_SELECTOR, read_cs());
+    vmwrite(VMCS_HOST_SS_SELECTOR, read_ss());
+    vmwrite(VMCS_HOST_DS_SELECTOR, read_ds());
+    vmwrite(VMCS_HOST_ES_SELECTOR, read_es());
+    vmwrite(VMCS_HOST_FS_SELECTOR, read_fs());
+    vmwrite(VMCS_HOST_GS_SELECTOR, read_gs());
+    vmwrite(VMCS_HOST_TR_SELECTOR, read_ds());
+    // not used by the hv
+    vmwrite(VMCS_HOST_FS_BASE, 0);
+    vmwrite(VMCS_HOST_GS_BASE, 0);
+    // https://www.felixcloutier.com/x86/ltr
+    vmwrite(VMCS_HOST_TR_BASE, read_ds());
+    vmwrite(VMCS_HOST_GDTR_BASE, read_gdtr_base());
+    vmwrite(VMCS_HOST_IDTR_BASE, 0);
+
     LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 
 }
@@ -111,4 +140,8 @@ vm_instruction_error_t check_vm_instruction_error() {
     vmread(VMCS_VM_INSTRUCTION_ERROR, &error_code);
 
     return (vm_instruction_error_t)error_code;
+}
+
+void vm_exit_handler() {
+    LOG_INFO("VM-exit occurred");
 }

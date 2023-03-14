@@ -77,3 +77,50 @@ static inline void write_cr3(qword_t cr3) {
 static inline void write_cr4(qword_t cr4) {
     asm volatile("mov %0, %%cr4" :: "r"(cr4));
 }
+
+static inline word_t read_cs() {
+    word_t selector;
+    asm volatile("mov %%cs, %0" 
+                    : "=r"(selector));
+    return selector;
+}
+
+static inline word_t read_ss() {
+    word_t selector;
+    asm volatile("mov %%ss, %0" 
+                    : "=r"(selector));
+    return selector;
+}
+
+static inline word_t read_ds() {
+    word_t selector;
+    asm volatile("mov %%ds, %0" 
+                    : "=r"(selector));
+    return selector;
+}
+
+static inline word_t read_es() {
+    word_t selector;
+    asm volatile("mov %%es, %0" 
+                    : "=r"(selector));
+    return selector;
+}
+
+static inline word_t read_fs() {
+    word_t selector;
+    asm volatile("mov %%fs, %0" 
+                    : "=r"(selector));
+    return selector;
+}
+
+static inline word_t read_gs() {
+    word_t selector;
+    asm volatile("mov %%gs, %0" 
+                    : "=r"(selector));
+    return selector;
+}
+
+extern void gdt();
+static inline qword_t read_gdtr_base() {
+    return (qword_t)gdt;
+}
