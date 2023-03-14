@@ -79,10 +79,20 @@ void configure_vmcs() {
     ASSERT(BIT_N(default_bits, 1) && BIT_N(default_bits, 2) && BIT_N(default_bits, 4));
     vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
 
-    // primary-process based VM-execution control fields
+    // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
     vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
+    // CR3-target controls 24.6.7, `mov cr3` will cause VM exit at default
+
+    // VM-exit control fields
+    default_bits = get_default_bits(MSR_IA32_VMX_EXIT_CTLS, MSR_IA32_VMX_TRUE_EXIT_CTLS);
+    vmwrite(VMCS_VM_EXIT_CONTROLS, default_bits);
+
+    // VM-entry control fields
+    default_bits = get_default_bits(MSR_IA32_VMX_ENTRY_CTLS, MSR_IA32_VMX_TRUE_ENTRY_CTLS);
+    vmwrite(VMCS_VM_ENTRY_CONTROLS, default_bits);
     LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
+
 }
 
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
