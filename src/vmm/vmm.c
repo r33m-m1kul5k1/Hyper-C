@@ -20,6 +20,7 @@
 #define PAGE_FRAME_SIZE 0x1000
 
 vm_instruction_error_t check_vm_instruction_error();
+dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
 
 
 void enter_vmx_root() {    
@@ -59,7 +60,6 @@ void enter_vmx_root() {
     ASSERT(vmptrld((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
     
     LOG_INFO("entered VMX-root operation");
-    LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 
 void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
@@ -72,20 +72,28 @@ void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
 }
 
 void configure_vmcs() {
-    // vm execution control fields
-    
-    dword_t default1 = read_msr(MSR_IA32_VMX_PINBASED_CTLS);
-    dword_t default0 = read_msr(MSR_IA32_VMX_PINBASED_CTLS) >> 32;
+    dword_t default_bits;
+    // pin base VM-execution control fields
+    default_bits = get_default_bits(MSR_IA32_VMX_PINBASED_CTLS, MSR_IA32_VMX_TRUE_PINBASED_CTLS);
+    // bits 1, 2, 4 must contain inside default1
+    ASSERT(BIT_N(default_bits, 1) && BIT_N(default_bits, 2) && BIT_N(default_bits, 4));
+    vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
+
+    // primary-process based VM-execution control fields
+    default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
+    vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
+    LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
+}
+
+dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
+    dword_t default1 = read_msr(defualt_bits_msr);
+    dword_t default0 = read_msr(defualt_bits_msr) >> 32;
 
     if (BIT_N(read_msr(MSR_IA32_VMX_BASIC), 55)) {
-        default1 = read_msr(MSR_IA32_VMX_TRUE_PINBASED_CTLS);
-        default0 = read_msr(MSR_IA32_VMX_TRUE_PINBASED_CTLS) >> 32;
-        LOG_DEBUG("defualt1 at IA32_VMX_TRUE_PINBASED_CTLS: %b", default1);
-        // bits 1, 2, 4 must contain inside default1
-        ASSERT(BIT_N(default1, 1) && BIT_N(default1, 2) && BIT_N(default1, 4));
+        default1 = read_msr(true_defualt_bits_msr);
+        default0 = read_msr(true_defualt_bits_msr) >> 32;    
     }
-    vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default1 & default0);
-
+    return default1 & default0;
 }
 
 vm_instruction_error_t check_vm_instruction_error() {

@@ -38,7 +38,7 @@ Initialize communication with the bios
 void initialize_bios() {
     
     LOG_INFO(
-        "relocating real mode code from [%p - %p] to the 'low memory' at %x", 
+        "copying real mode code from [%p - %p] to the 'low memory' at %x", 
         real_mode_start, 
         real_mode_end, 
         REAL_MODE_BASE_ADDRESS
