@@ -8,28 +8,45 @@
 #include "lib/log.h"
 #include "lib/utils.h"
 
+/* VMX related data */
 #define CR4_VMX_ENABLE (1 << 13)
 #define CR0_NE_ENABLE (1 << 5)
-
 #define IA32_FEATURE_CONTROL_LOCK_BIT (1 << 0)
 #define IA32_FEATURE_CONTROL_ENABLE_VMXON_INSIDE_SMX (1 << 1)
 #define IA32_FEATURE_CONTROL_ENABLE_VMXON_OUTSIDE_SMX (1 << 2)
-
 #define VMXON_REGION_ADDRESS 0x10000
 #define VMCS_REGION_ADDRESS 0x11000
+
+/* Pagign related data */
 #define PAGE_FRAME_SIZE 0x1000
+#define STACK_TOP 0x7BFF
+
+/* VMCS related data */
 #define CANONICAL_ADDRESS 0xffffffff
 #define CANONICAL_SELECTOR 0xff
-
-#define STACK_TOP 0x7BFF
+#define VMCS_SELECTOR_UNUSABLE (1 << 16)
 #define DESCRIPTOR_MAX_LIMIT 0xfffff
+#define IA32_MAX_LIMIT 0xffffffff
 #define GUEST_DS_ACCESS_RIGHTS 0xc093
 #define GUEST_CS_ACCESS_RIGHTS 0xa09b
+#define GUEST_TR_ACCESS_RIGHTS 0xc08b
+#define RFLAGS_RESERVE_ZERO_BITS !((1 << 15) | (1 << 5) | (1 << 3))
+#define RFLAGS_RESERVE_ONE_BITS (1 << 1)
+#define RFLAGS_VM_FLAG !(1 << 17)
+#define DEFAULT_INTERRUPTIBILITY_STATE 0UL
 
 vm_instruction_error_t check_vm_instruction_error();
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
 void vm_exit_handler();
+void vm_entry_handler();
 
+// SDM 24.4.2
+enum {
+    CPU_STATE_ACTIVE,
+    CPU_STATE_HLT,
+    CPU_STATE_SHUTDOWN,
+    CPU_STATE_WAIT_FOR_SIPI
+} typedef activity_state_t;
 
 void enter_vmx_root() {    
     // Note that PE & PG should be 0 with "unrestricted guest".
@@ -119,35 +136,78 @@ void configure_vmcs() {
     vmwrite(VMCS_HOST_GS_SELECTOR, read_gs());
     vmwrite(VMCS_HOST_TR_SELECTOR, read_ds());
     // not used by the hv
-    vmwrite(VMCS_HOST_FS_BASE, 0);
-    vmwrite(VMCS_HOST_GS_BASE, 0);
+    vmwrite(VMCS_HOST_FS_BASE, 0ULL);
+    vmwrite(VMCS_HOST_GS_BASE, 0ULL);
     // https://www.felixcloutier.com/x86/ltr
     vmwrite(VMCS_HOST_TR_BASE, read_ds());
     vmwrite(VMCS_HOST_GDTR_BASE, read_gdtr_base());
-    vmwrite(VMCS_HOST_IDTR_BASE, 0);
+    vmwrite(VMCS_HOST_IDTR_BASE, 0ULL);
 
     // Guest state area
     vmwrite(VMCS_GUEST_CR0, read_cr0());
     vmwrite(VMCS_GUEST_CR3, read_cr3());
     vmwrite(VMCS_GUEST_CR4, read_cr4());
+    vmwrite(VMCS_GUEST_RIP, (qword_t)vm_entry_handler);
+    vmwrite(VMCS_GUEST_RSP, STACK_TOP); // may be 0 in the future
+    vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_RESERVE_ONE_BITS) &
+                                                RFLAGS_RESERVE_ZERO_BITS &
+                                                RFLAGS_VM_FLAG);
+
     vmwrite(VMCS_HOST_SYSENTER_EIP, CANONICAL_ADDRESS);
     vmwrite(VMCS_HOST_SYSENTER_ESP, CANONICAL_ADDRESS);
 
     vmwrite(VMCS_GUEST_CS_SELECTOR, read_cs());
-    vmwrite(VMCS_GUEST_CS_BASE, 0);
+    vmwrite(VMCS_GUEST_CS_BASE, 0ULL);
     vmwrite(VMCS_GUEST_CS_LIMIT, DESCRIPTOR_MAX_LIMIT);
     vmwrite(VMCS_GUEST_CS_AR_BYTES, GUEST_CS_ACCESS_RIGHTS);
 
     vmwrite(VMCS_GUEST_SS_SELECTOR, read_ss());
-    vmwrite(VMCS_GUEST_DS_SELECTOR, read_ds());
-    vmwrite(VMCS_GUEST_ES_SELECTOR, read_es());
-    vmwrite(VMCS_GUEST_FS_SELECTOR, read_fs());
-    vmwrite(VMCS_GUEST_GS_SELECTOR, read_gs());
-    vmwrite(VMCS_GUEST_TR_SELECTOR, read_ds());
-    vmwrite(VMCS_GUEST_LDTR_SELECTOR, read_ds());
-    vmwrite(VMCS_GUEST_TR_SELECTOR, read_ds());
-    LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
+    vmwrite(VMCS_GUEST_SS_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_SS_LIMIT, DESCRIPTOR_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_SS_AR_BYTES, GUEST_DS_ACCESS_RIGHTS);
 
+    vmwrite(VMCS_GUEST_DS_SELECTOR, read_ds());
+    vmwrite(VMCS_GUEST_DS_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_DS_LIMIT, DESCRIPTOR_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_DS_AR_BYTES, GUEST_DS_ACCESS_RIGHTS);
+    
+    vmwrite(VMCS_GUEST_ES_SELECTOR, read_es());
+    vmwrite(VMCS_GUEST_ES_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_ES_LIMIT, DESCRIPTOR_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_ES_AR_BYTES, GUEST_DS_ACCESS_RIGHTS);
+
+    vmwrite(VMCS_GUEST_FS_SELECTOR, read_fs());
+    vmwrite(VMCS_GUEST_FS_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_FS_LIMIT, DESCRIPTOR_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_FS_AR_BYTES, GUEST_DS_ACCESS_RIGHTS);
+
+    vmwrite(VMCS_GUEST_GS_SELECTOR, read_gs());
+    vmwrite(VMCS_GUEST_GS_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_GS_LIMIT, DESCRIPTOR_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_GS_AR_BYTES, GUEST_DS_ACCESS_RIGHTS);
+
+    vmwrite(VMCS_GUEST_TR_SELECTOR, read_ds());
+    vmwrite(VMCS_GUEST_TR_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_TR_LIMIT, DESCRIPTOR_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_TR_AR_BYTES, GUEST_TR_ACCESS_RIGHTS);
+
+    vmwrite(VMCS_GUEST_LDTR_SELECTOR, read_ds());
+    vmwrite(VMCS_GUEST_LDTR_BASE, 0);
+    vmwrite(VMCS_GUEST_LDTR_LIMIT, 0xff);
+    vmwrite(VMCS_GUEST_LDTR_AR_BYTES, VMCS_SELECTOR_UNUSABLE);
+    // Descriptor tables
+    vmwrite(VMCS_GUEST_GDTR_BASE, read_gdtr_base());
+    vmwrite(VMCS_GUEST_IDTR_LIMIT, IA32_MAX_LIMIT);
+    vmwrite(VMCS_GUEST_IDTR_BASE, 0ULL);
+    vmwrite(VMCS_GUEST_IDTR_LIMIT, IA32_MAX_LIMIT);
+    
+    vmwrite(VMCS_GUEST_ACTIVITY_STATE, CPU_STATE_ACTIVE);
+    vmwrite(VMCS_GUEST_INTERRUPTIBILITY_INFO, DEFAULT_INTERRUPTIBILITY_STATE);
+    vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
+    
+    // checks vmcs
+    vmlaunch();
+    LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
@@ -170,4 +230,8 @@ vm_instruction_error_t check_vm_instruction_error() {
 
 void vm_exit_handler() {
     LOG_INFO("VM-exit occurred");
+}
+
+void vm_entry_handler() {
+    LOG_INFO("VM-entry occurred");
 }

@@ -124,3 +124,9 @@ extern void gdt();
 static inline qword_t read_gdtr_base() {
     return (qword_t)gdt;
 }
+
+static inline qword_t read_rflags() {
+    qword_t rflags = 0;
+    asm volatile("pushf; pop %0" : "=r"(rflags));
+    return rflags;
+}
