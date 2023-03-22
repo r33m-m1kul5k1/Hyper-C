@@ -43,10 +43,12 @@ static inline vmx_error_codes_t vmptrld(void *vmcs_region) {
     return VM_SUCCESS;
 }
 
-static inline void vmread(qword_t field, qword_t *value) {
+static inline qword_t vmread(qword_t field) {
     // note that the argument sequnce is swaped because we use AT&T format
     // format: operand src, dst
-    asm volatile("vmread %1, %0" : "=rm"(*value) : "r"(field));
+    qword_t value = 0;
+    asm volatile("vmread %1, %0" : "=rm"(value) : "r"(field));
+    return value;
 }
 
 static inline void vmwrite(qword_t field, qword_t value) {

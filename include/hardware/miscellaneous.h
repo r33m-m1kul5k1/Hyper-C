@@ -12,3 +12,9 @@ static inline void out(dword_t port, byte_t data) {
     */ 
     asm volatile("out %1, %0" :: "d"(port), "a"(data));
 }
+
+static inline void hlt_loop() {
+    while (1) {
+        asm volatile("hlt");
+    }
+}

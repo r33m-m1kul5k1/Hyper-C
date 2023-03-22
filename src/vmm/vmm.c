@@ -1,5 +1,6 @@
 #include "vmm/vmm.h"
 #include "hardware/registers.h"
+#include "hardware/miscellaneous.h"
 #include "hardware/vmcs.h"
 #include "hardware/types.h"
 #include "hardware/vmx.h"
@@ -103,10 +104,10 @@ void configure_vmcs() {
     // bits 1, 2, 4 must contain inside default1
     ASSERT(BIT_N(default_bits, 1) && BIT_N(default_bits, 2) && BIT_N(default_bits, 4));
     vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
-
+    LOG_DEBUG("pin base control: %b, default bits %b", vmread(VMCS_PIN_BASED_VM_EXEC_CONTROL), default_bits);
     // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
-    vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
+    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits);
     // CR3-target controls 24.6.7, `mov cr3` will cause VM exit at default
 
     // VM-exit control fields
@@ -207,31 +208,34 @@ void configure_vmcs() {
     
     // checks vmcs
     vmlaunch();
-    LOG_DEBUG("current VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
+    PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
-    dword_t default1 = read_msr(defualt_bits_msr);
+    dword_t default1 = read_msr(defualt_bits_msr) & 0xffffffffUL;
     dword_t default0 = read_msr(defualt_bits_msr) >> 32;
 
     if (BIT_N(read_msr(MSR_IA32_VMX_BASIC), 55)) {
-        default1 = read_msr(true_defualt_bits_msr);
+        default1 = read_msr(true_defualt_bits_msr) & 0xffffffffUL;
         default0 = read_msr(true_defualt_bits_msr) >> 32;    
     }
+
     return default1 & default0;
 }
 
 vm_instruction_error_t check_vm_instruction_error() {
     qword_t error_code = UNDEFINE_VM_INSTRUCTION_ERROR;
-    vmread(VMCS_VM_INSTRUCTION_ERROR, &error_code);
+    error_code = vmread(VMCS_VM_INSTRUCTION_ERROR);
 
     return (vm_instruction_error_t)error_code;
 }
 
 void vm_exit_handler() {
     LOG_INFO("VM-exit occurred");
+    hlt_loop();
 }
 
 void vm_entry_handler() {
     LOG_INFO("VM-entry occurred");
+    hlt_loop();
 }
