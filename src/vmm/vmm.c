@@ -5,6 +5,7 @@
 #include "hardware/types.h"
 #include "hardware/vmx.h"
 #include "hardware/error_codes.h"
+#include "hardware/exit_reason.h"
 #include "hardware/msr.h"
 #include "lib/log.h"
 #include "lib/utils.h"
@@ -231,7 +232,17 @@ vm_instruction_error_t check_vm_instruction_error() {
 }
 
 void vm_exit_handler() {
-    LOG_INFO("VM-exit occurred");
+    exit_reason_t exit_reason = { 0 };
+    vmread_with_ptr(VMCS_VM_EXIT_REASON, (qword_t *)&exit_reason);
+    LOG_INFO("VM-exit reason: %s", EXIT_REASON_STRINGS[exit_reason.basic_exit_reason]);
+
+    switch (exit_reason.basic_exit_reason) {
+        case EXIT_REASON_HLT:
+            LOG_INFO("handling hlt from guest");
+            break;
+        default:
+            PANIC("unsupported exit reason")
+    }
     hlt_loop();
 }
 

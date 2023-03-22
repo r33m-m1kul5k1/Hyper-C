@@ -51,6 +51,10 @@ static inline qword_t vmread(qword_t field) {
     return value;
 }
 
+static inline void vmread_with_ptr(qword_t field, qword_t *value) {
+    asm volatile("vmread %1, %0" : "=rm"(*value) : "r"(field));
+}
+
 static inline void vmwrite(qword_t field, qword_t value) {
     asm volatile("vmwrite %0, %1" :: "rm"(value), "r"(field));
 }
