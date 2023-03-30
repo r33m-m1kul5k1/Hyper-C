@@ -24,7 +24,6 @@
 %define STACK_TOP 0x7BFF
 
 ; 0x7E00 - 0x7FFFF - 480 KiB
-
 %define IA32e_PAGING_BASE 0x12000
 ;----------------------------------------------------
 

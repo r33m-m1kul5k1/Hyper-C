@@ -10,7 +10,7 @@ struct {
     unsigned int exit_from_vmx_root       : 1;
     unsigned int                          : 1;
     unsigned int vm_entry_failure         : 1;
-
+    unsigned int padding                  : 32;
 } typedef exit_reason_t;
 
 

@@ -36,7 +36,7 @@ protected_to_long:
     pop esi
     
     ; setup long mode structures
-    lgdt [gdt.pointer]
+    lgdt [IA32_gdtr]
     call setup_pml4_map
 
     ; disable previous paging
@@ -62,16 +62,18 @@ protected_to_long:
     or eax, PAGING
     mov cr0, eax
 
-    jmp gdt.IA32e_code_segment:.long_mode
+    jmp IA32E_CODE_SEGMENT:.long_mode
 
 [bits 64]
 .long_mode:
-    setup_data_segments gdt.IA32e_data_segment
+    setup_data_segments IA32E_DATA_SEGMENT
+    lgdt [IA32e_gdtr]
 
     and rsi, 0xFFFFFFFF
     push rsi
     ret
 ;------------------------------------------------------------------
+
 
 %include "src/bios/real_mode.asm"
 section .multiboot

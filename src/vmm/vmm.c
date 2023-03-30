@@ -1,10 +1,10 @@
 #include "vmm/vmm.h"
+#include "vmm/vmexit.h"
 #include "hardware/registers.h"
 #include "hardware/miscellaneous.h"
 #include "hardware/vmcs.h"
 #include "hardware/types.h"
 #include "hardware/vmx.h"
-#include "hardware/error_codes.h"
 #include "hardware/exit_reason.h"
 #include "hardware/msr.h"
 #include "lib/log.h"
@@ -19,9 +19,10 @@
 #define VMXON_REGION_ADDRESS 0x10000
 #define VMCS_REGION_ADDRESS 0x11000
 
-/* Pagign related data */
+/* Paging related data */
 #define PAGE_FRAME_SIZE 0x1000
 #define STACK_TOP 0x7BFF
+#define GUEST_REGISTERS_STATE 0x7FF00
 
 /* VMCS related data */
 #define CANONICAL_ADDRESS 0xffffffff
@@ -39,10 +40,41 @@
 vm_instruction_error_t check_vm_instruction_error();
 void initialize_vmx_regions(char* vmxon_region, char* vmcs_region);
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
-void vm_exit_handler();
-void vm_entry_handler();
+void vmexit_handler();
+void vmentry_handler();
+void resume_vm();
 
-extern void _vmlaunch_handler();
+extern void _vmlaunch_wrapper();
+extern void _vmexit_wrapper();
+
+const char *VM_INSTRUCTION_ERROR_STRINGS[] = {
+    [UNDEFINE_VM_INSTRUCTION_ERROR] = "UNDEFINE_VM_INSTRUCTION_ERROR",
+    [VMCALL_EXECUTED_IN_VMX_ROOT_OPERATION] = "VMCALL_EXECUTED_IN_VMX_ROOT_OPERATION",
+    [VMCLEAR_WITH_INVALID_PHYSICAL_ADDRESS] = "VMCLEAR_WITH_INVALID_PHYSICAL_ADDRESS",
+    [VMCLEAR_WITH_VMXON_POINTER] = "VMCLEAR_WITH_VMXON_POINTER",
+    [VMLAUNCH_WITH_NON_CLEAR_VMCS] = "VMLAUNCH_WITH_NON_CLEAR_VMCS",
+    [VMRESUME_WITH_NON_LAUNCHED_VMCS] = "VMRESUME_WITH_NON_LAUNCHED_VMCS",
+    [VMRESUME_AFTER_VMXOFF] = "VMRESUME_AFTER_VMXOFF",
+    [VMENTRY_WITH_INVALID_CONTROL_FIELDS] = "VMENTRY_WITH_INVALID_CONTROL_FIELDS",
+    [VM_ENTRY_WITH_INVALID_HOST_STATE_FIELDS] = "VM_ENTRY_WITH_INVALID_HOST_STATE_FIELDS",
+    [VMPTRLD_WITH_INVALID_PHYSICAL_ADDRESS] = "VMPTRLD_WITH_INVALID_PHYSICAL_ADDRESS",
+    [VMPTRLD_WITH_VMXON_POINTER] = "VMPTRLD_WITH_VMXON_POINTER",
+    [VMPTRLD_WITH_INCORRECT_VMCS_REVISION_IDENTIFIER] = "VMPTRLD_WITH_INCORRECT_VMCS_REVISION_IDENTIFIER",
+    [VMREAD_OR_VMWRITE_TO_UNSUPPORTED_VMCS_COMPONENT] = "VMREAD_OR_VMWRITE_TO_UNSUPPORTED_VMCS_COMPONENT",
+    [VMWRITE_TO_READ_ONLY_VMCS_COMPONENT] = "VMWRITE_TO_READ_ONLY_VMCS_COMPONENT",
+    [VMXON_EXECUTED_IN_VMX_ROOT_OPERATION] = "VMXON_EXECUTED_IN_VMX_ROOT_OPERATION",
+    [VM_ENTRY_WITH_INVALID_EXECUTIVE_VMCS_POINTER] = "VM_ENTRY_WITH_INVALID_EXECUTIVE_VMCS_POINTER",
+    [VM_ENTRY_WITH_NON_LAUNCHED_EXECUTIVE_VMCS] = "VM_ENTRY_WITH_NON_LAUNCHED_EXECUTIVE_VMCS",
+    [VM_ENTRY_WITH_WXECUTIVE_VMCS_POINTER_NOT_VMXON_POINTER] = "VM_ENTRY_WITH_WXECUTIVE_VMCS_POINTER_NOT_VMXON_POINTER",
+    [VMCALL_WITH_NON_CLEAR_VMCS] = "VMCALL_WITH_NON_CLEAR_VMCS",
+    [VMCALL_WITH_INVALID_VM_EXIT_CONTROL_FIELDS] = "VMCALL_WITH_INVALID_VM_EXIT_CONTROL_FIELDS",
+    [VMCALL_WITH_INCORRECT_MSEG_REVISION_IDENTIFIER] = "VMCALL_WITH_INCORRECT_MSEG_REVISION_IDENTIFIER",
+    [VMXOFF_UNSER_DUAL_MONITOR_TREATMENT] = "VMXOFF_UNSER_DUAL_MONITOR_TREATMENT",
+    [VMCALL_WITH_INVALID_SMM_MONITOR] = "VMCALL_WITH_INVALID_SMM_MONITOR",
+    [VM_ENTRY_WITH_INVALID_VM_EXECUTION_CONTROL_FIELDS] = "VM_ENTRY_WITH_INVALID_VM_EXECUTION_CONTROL_FIELDS",
+    [VM_ENTRY_WITH_EVENTS_BLOCKED_BY_MOV_SS] = "VM_ENTRY_WITH_EVENTS_BLOCKED_BY_MOV_SS",
+    [INVALID_OPERAND_TO_INVEPT_OR_IVVPID] = "INVALID_OPERAND_TO_INVEPT_OR_IVVPID",
+};
 
 // SDM 24.4.2
 enum {
@@ -112,7 +144,7 @@ void configure_vmcs() {
 
     // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
-    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits);
+    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits | CPU_BASED_HLT_EXITING);
     // CR3-target controls 24.6.7, `mov cr3` will cause VM exit at default
 
     // VM-exit control fields
@@ -127,7 +159,7 @@ void configure_vmcs() {
     vmwrite(VMCS_HOST_CR0, read_cr0());
     vmwrite(VMCS_HOST_CR4, read_cr4());
     vmwrite(VMCS_HOST_CR3, read_cr3());
-    vmwrite(VMCS_HOST_RIP, (qword_t)vm_exit_handler);
+    vmwrite(VMCS_HOST_RIP, (qword_t)_vmexit_wrapper);
     vmwrite(VMCS_HOST_RSP, STACK_TOP);
 
     vmwrite(VMCS_HOST_SYSENTER_CS, CANONICAL_SELECTOR);
@@ -141,8 +173,8 @@ void configure_vmcs() {
     vmwrite(VMCS_HOST_FS_SELECTOR, read_fs());
     vmwrite(VMCS_HOST_GS_SELECTOR, read_gs());
     vmwrite(VMCS_HOST_TR_SELECTOR, read_ds());
-    // not used by the hv
-    vmwrite(VMCS_HOST_FS_BASE, 0ULL);
+
+    vmwrite(VMCS_HOST_FS_BASE, GUEST_REGISTERS_STATE);
     vmwrite(VMCS_HOST_GS_BASE, 0ULL);
     // https://www.felixcloutier.com/x86/ltr
     vmwrite(VMCS_HOST_TR_BASE, read_ds());
@@ -158,7 +190,7 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_CR3, read_cr3());
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
-    vmwrite(VMCS_GUEST_RIP, (qword_t)vm_entry_handler); 
+    vmwrite(VMCS_GUEST_RIP, (qword_t)vmentry_handler); 
     vmwrite(VMCS_GUEST_RSP, 0); // will be changed in wrappers.asm
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
@@ -219,29 +251,42 @@ void configure_vmcs() {
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
 }
 
-void vm_exit_handler() {
+void vmexit_handler() {
     exit_reason_t exit_reason = { 0 };
+    handler_status_t status = HANDLER_FAILURE;
+    registers_t *state = (registers_t *)GUEST_REGISTERS_STATE;
+
     vmread_with_ptr(VMCS_VM_EXIT_REASON, (qword_t *)&exit_reason);
     LOG_INFO("VM-exit reason: %s", EXIT_REASON_STRINGS[exit_reason.basic_exit_reason]);
 
     switch (exit_reason.basic_exit_reason) {
         case EXIT_REASON_HLT:
-            LOG_INFO("handling hlt from guest");
+            status = halt_handler(state);
             break;
         default:
-            PANIC("unsupported exit reason")
+            PANIC("unsupported exit reason");
     }
-    hlt_loop();
+
+    if (status == HANDLER_FAILURE) {
+        PANIC("Faild to handle VM-exit");
+    }
 }
 
-void vm_entry_handler() {
+void vmentry_handler() {
     LOG_INFO("VM-entry occurred");
-    hlt_loop();
+    asm volatile("hlt");
+    asm volatile("hlt");
+    while (1) {}
 }
 
 void launch_vm() {
     LOG_INFO("Launching the VM");
-    _vmlaunch_handler();
+    _vmlaunch_wrapper();
+    PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
+}
+
+void resume_vm() {
+    vmresume();
     PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 

@@ -22,12 +22,12 @@ struct {
 
 } typedef disk_address_packet_t;
 
-struct {
+struct __attribute__((__packed__)) {
     word_t limit;
     qword_t base;
 } typedef gdtr_t;
 
-struct {
+struct __attribute__((__packed__)) {
     word_t limit;
     qword_t base;
-} typedef idtr_t;
+} typedef idtr_t ;

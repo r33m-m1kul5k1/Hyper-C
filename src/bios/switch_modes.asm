@@ -23,7 +23,7 @@ call_real_mode_function:
 
 ;------------------------------------------------------------------
 ; Jumps from real mode to protected mode
-; Safty - the gdt must be loaded before calling this function
+; Safety - the gdt must be loaded before calling this function
 ; Returns the new stack inside eax
 [bits 16]
 real_to_protected:
@@ -34,11 +34,11 @@ real_to_protected:
     mov eax, cr0
     or eax, (PROTECTION_ENABLE)
     mov cr0, eax
-    jmp gdt.IA32_code_segment:REAL_MODE_RELOCATION(protected_mode)
+    jmp IA32_CODE_SEGMENT:REAL_MODE_RELOCATION(protected_mode)
 
 [bits 32]
 protected_mode:
-    setup_data_segments gdt.IA32_data_segment
+    setup_data_segments IA32_DATA_SEGMENT
 
     ; Note that I don't initialize an IDT
     and edi, 0xFFFF
@@ -79,11 +79,11 @@ protected_to_long_lower_memory:
     or eax, PAGING
     mov cr0, eax
 
-    jmp gdt.IA32e_code_segment:REAL_MODE_RELOCATION(.long_mode)
+    jmp IA32E_CODE_SEGMENT:REAL_MODE_RELOCATION(.long_mode)
 
 [bits 64]
 .long_mode:
-    setup_data_segments gdt.IA32e_data_segment
+    setup_data_segments IA32E_CODE_SEGMENT
 
     and rsi, 0xFFFFFFFF
     push rsi
@@ -97,15 +97,14 @@ protected_to_long_lower_memory:
 [bits 64]
 long_to_protected:
     ; https://forum.nasm.us/index.php?topic=1474.0
-    push gdt.IA32_code_segment
+    push IA32_CODE_SEGMENT
     push REAL_MODE_RELOCATION(compatibility_mode)
     retfq
 
 
 [bits 32]
 compatibility_mode:
-
-    setup_data_segments gdt.IA32_data_segment
+    setup_data_segments IA32_DATA_SEGMENT
 
     mov eax, cr0
     and eax, ~(PAGING)
@@ -130,11 +129,11 @@ compatibility_mode:
 [bits 32]
 protected_to_real:
     cli
-    jmp gdt.real_mode_code_segment:REAL_MODE_RELOCATION(protected_real_mode)
+    jmp REAL_MODE_CODE_SEGMENT:REAL_MODE_RELOCATION(protected_real_mode)
  
 [bits 16]
 protected_real_mode:
-    setup_data_segments gdt.real_mode_data_segment
+    setup_data_segments REAL_MODE_DATA_SEGMENT
     
     lidt [REAL_MODE_RELOCATION(ivt_pointer)]
 
