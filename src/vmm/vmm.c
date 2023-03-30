@@ -58,8 +58,6 @@ void enter_vmx_root() {
     write_cr4((read_cr4() | CR4_VMX_ENABLE | read_msr(MSR_IA32_VMX_CR4_FIXED0)) & read_msr(MSR_IA32_VMX_CR4_FIXED1));
     
     int feature_control_msr = read_msr(MSR_IA32_FEATURE_CONTROL);
-    LOG_DEBUG("IA32_FEATURE_CONTROL: %b", feature_control_msr);
-
     if (feature_control_msr & IA32_FEATURE_CONTROL_LOCK_BIT) {
         // meaning the bios initialized the msr and locked it
         if (feature_control_msr & IA32_FEATURE_CONTROL_ENABLE_VMXON_INSIDE_SMX) {
@@ -161,7 +159,7 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
     vmwrite(VMCS_GUEST_RIP, (qword_t)vm_entry_handler); 
-    vmwrite(VMCS_GUEST_RSP, 0); // will be changed in handlers.asm
+    vmwrite(VMCS_GUEST_RSP, 0); // will be changed in wrappers.asm
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
     vmwrite(VMCS_GUEST_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & 0xffffffff);
