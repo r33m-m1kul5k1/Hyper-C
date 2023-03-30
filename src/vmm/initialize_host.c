@@ -21,7 +21,7 @@ void load_mbr();
 
 void initialize_host() {
     
-    set_log_level(INFO_LEVEL);
+    set_log_level(DEBUG_LEVEL);
     LOG_INFO("initializing machine");
     
 

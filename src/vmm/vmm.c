@@ -32,10 +32,10 @@
 #define GUEST_DS_ACCESS_RIGHTS 0xc093
 #define GUEST_CS_ACCESS_RIGHTS 0xa09b
 #define GUEST_TR_ACCESS_RIGHTS 0xc08b
-#define RFLAGS_RESERVE_ZERO_BITS !((1 << 15) | (1 << 5) | (1 << 3))
-#define RFLAGS_RESERVE_ONE_BITS (1 << 1)
-#define RFLAGS_VM_FLAG !(1 << 17)
+#define RFLAGS_DEFAULT0 0xfffd7fd7
+#define RFLAGS_DEFAULT1 (1 << 1)
 #define DEFAULT_INTERRUPTIBILITY_STATE 0UL
+#define IA32_DEBUGCTL_DEFAULT0 0xffc3
 
 vm_instruction_error_t check_vm_instruction_error();
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
@@ -54,7 +54,7 @@ void enter_vmx_root() {
     // Note that PE & PG should be 0 with "unrestricted guest".
     write_cr0((read_cr0() | CR0_NE_ENABLE | read_msr(MSR_IA32_VMX_CR0_FIXED0)) & read_msr(MSR_IA32_VMX_CR0_FIXED1));
     write_cr4((read_cr4() | CR4_VMX_ENABLE | read_msr(MSR_IA32_VMX_CR4_FIXED0)) & read_msr(MSR_IA32_VMX_CR4_FIXED1));
-    // dr7 ?
+    
     int feature_control_msr = read_msr(MSR_IA32_FEATURE_CONTROL);
     LOG_DEBUG("IA32_FEATURE_CONTROL: %b", feature_control_msr);
 
@@ -80,6 +80,10 @@ void enter_vmx_root() {
     }
     
 
+    // see Intel SDM, 26.3.1.1, 5th and 6th points
+    write_msr(MSR_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & IA32_DEBUGCTL_DEFAULT0);
+	write_dr7(read_dr7() & 0xffffffff);
+     
     initialize_vmx_regions((char *)VMXON_REGION_ADDRESS, (char *)VMCS_REGION_ADDRESS);
     
     ASSERT(vmxon((void *)VMXON_REGION_ADDRESS) == VM_SUCCESS);
@@ -105,7 +109,7 @@ void configure_vmcs() {
     // bits 1, 2, 4 must contain inside default1
     ASSERT(BIT_N(default_bits, 1) && BIT_N(default_bits, 2) && BIT_N(default_bits, 4));
     vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
-    LOG_DEBUG("pin base control: %b, default bits %b", vmread(VMCS_PIN_BASED_VM_EXEC_CONTROL), default_bits);
+
     // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
     vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits);
@@ -142,21 +146,30 @@ void configure_vmcs() {
     vmwrite(VMCS_HOST_GS_BASE, 0ULL);
     // https://www.felixcloutier.com/x86/ltr
     vmwrite(VMCS_HOST_TR_BASE, read_ds());
-    vmwrite(VMCS_HOST_GDTR_BASE, read_gdtr_base());
-    vmwrite(VMCS_HOST_IDTR_BASE, 0ULL);
+    gdtr_t gdtr = read_gdtr();
+    idtr_t idtr = read_idtr();
+    LOG_DEBUG("gdtr base: %x, limit: %x", gdtr.base, gdtr.limit);
+    LOG_DEBUG("idtr base: %x, limit: %x", idtr.base, idtr.limit);
+    vmwrite(VMCS_HOST_GDTR_BASE, gdtr.base);
+    vmwrite(VMCS_HOST_IDTR_BASE, idtr.base);
 
     // Guest state area
     vmwrite(VMCS_GUEST_CR0, read_cr0());
     vmwrite(VMCS_GUEST_CR3, read_cr3());
     vmwrite(VMCS_GUEST_CR4, read_cr4());
+    vmwrite(VMCS_GUEST_DR7, read_dr7());
     vmwrite(VMCS_GUEST_RIP, (qword_t)vm_entry_handler);
     vmwrite(VMCS_GUEST_RSP, STACK_TOP); // may be 0 in the future
-    vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_RESERVE_ONE_BITS) &
-                                                RFLAGS_RESERVE_ZERO_BITS &
-                                                RFLAGS_VM_FLAG);
 
-    vmwrite(VMCS_HOST_SYSENTER_EIP, CANONICAL_ADDRESS);
-    vmwrite(VMCS_HOST_SYSENTER_ESP, CANONICAL_ADDRESS);
+    LOG_DEBUG("rflags default zero: %b.\noriginal default one is 0x1fffd7 ", RFLAGS_DEFAULT0);
+    vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
+
+    vmwrite(VMCS_GUEST_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & 0xffffffff);
+    vmwrite(VMCS_GUEST_IA32_DEBUGCTL_HIGH, read_msr(MSR_IA32_DEBUGCTL) >> 32);
+
+    vmwrite(VMCS_GUEST_SYSENTER_CS, read_cs());
+    vmwrite(VMCS_GUEST_SYSENTER_EIP, CANONICAL_ADDRESS);
+    vmwrite(VMCS_GUEST_SYSENTER_ESP, CANONICAL_ADDRESS);
 
     vmwrite(VMCS_GUEST_CS_SELECTOR, read_cs());
     vmwrite(VMCS_GUEST_CS_BASE, 0ULL);
@@ -193,21 +206,22 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_TR_LIMIT, DESCRIPTOR_MAX_LIMIT);
     vmwrite(VMCS_GUEST_TR_AR_BYTES, GUEST_TR_ACCESS_RIGHTS);
 
-    vmwrite(VMCS_GUEST_LDTR_SELECTOR, read_ds());
+    vmwrite(VMCS_GUEST_LDTR_SELECTOR, 0); // null selector to mark unusable
     vmwrite(VMCS_GUEST_LDTR_BASE, 0);
     vmwrite(VMCS_GUEST_LDTR_LIMIT, 0xff);
     vmwrite(VMCS_GUEST_LDTR_AR_BYTES, VMCS_SELECTOR_UNUSABLE);
     // Descriptor tables
-    vmwrite(VMCS_GUEST_GDTR_BASE, read_gdtr_base());
-    vmwrite(VMCS_GUEST_IDTR_LIMIT, IA32_MAX_LIMIT);
-    vmwrite(VMCS_GUEST_IDTR_BASE, 0ULL);
-    vmwrite(VMCS_GUEST_IDTR_LIMIT, IA32_MAX_LIMIT);
+    
+    vmwrite(VMCS_GUEST_GDTR_BASE, gdtr.base);
+    vmwrite(VMCS_GUEST_IDTR_LIMIT, gdtr.limit);
+    vmwrite(VMCS_GUEST_IDTR_BASE, idtr.base);
+    vmwrite(VMCS_GUEST_IDTR_LIMIT, idtr.limit);
     
     vmwrite(VMCS_GUEST_ACTIVITY_STATE, CPU_STATE_ACTIVE);
     vmwrite(VMCS_GUEST_INTERRUPTIBILITY_INFO, DEFAULT_INTERRUPTIBILITY_STATE);
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
     
-    // checks vmcs
+    // checks vmcs, TODO: move this code to main
     vmlaunch();
     PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }

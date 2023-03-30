@@ -120,13 +120,30 @@ static inline word_t read_gs() {
     return selector;
 }
 
-extern void gdt();
-static inline qword_t read_gdtr_base() {
-    return (qword_t)gdt;
+static inline gdtr_t read_gdtr() {
+    gdtr_t gdtr = { .limit = 0, .base = 0 };
+    asm volatile("sgdt %0" : "=m"(gdtr));
+    return gdtr;
+}
+
+static inline idtr_t read_idtr() {
+    idtr_t idtr = { .limit = 0, .base = 0 };
+    asm volatile("sidt %0" : "=m"(idtr));
+    return idtr;
 }
 
 static inline qword_t read_rflags() {
     qword_t rflags = 0;
     asm volatile("pushf; pop %0" : "=r"(rflags));
     return rflags;
+}
+
+static inline qword_t read_dr7() {
+    qword_t dr7;
+    asm volatile("mov %%dr7, %0" : "=r"(dr7));
+    return dr7;
+}
+
+static inline void write_dr7(qword_t dr7) {
+    asm volatile("mov %0, %%dr7" :: "r"(dr7));
 }

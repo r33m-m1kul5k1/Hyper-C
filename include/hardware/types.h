@@ -21,3 +21,13 @@ struct {
     qword_t sector_lba;
 
 } typedef disk_address_packet_t;
+
+struct {
+    word_t limit;
+    qword_t base;
+} typedef gdtr_t;
+
+struct {
+    word_t limit;
+    qword_t base;
+} typedef idtr_t;

@@ -44,3 +44,41 @@ the reason:
 I include vmm.h twice, once for the vmm.c and once for initialize_host.c
 
 inside the vmm.h we need to include the error codes
+
+the bug:
+invalid guest state.
+
+possible faults:
+
+under guest state:
+
+under general:
+1. TSC_OFFSET & HIGH
+2. PAGE_FAULT_ERROR_CODE_MASK
+3. PAGE_FAULT_ERROR_CODE_MATCH
+4. VMCS_CR3_TARGET_COUNT
+5. CR0_GUEST_HOST_MASK
+6. CR4_GUEST_HOST_MASK
+
+
+under vm-exit:
+1. VM_EXIT_VMCS_VM_ENTRY_INTR_INFOMSR_STORE_COUNT
+2. VM_EXIT_MSR_LOAD_COUNT
+
+under vm-entry:
+1. VM_ENTRY_MSR_LOAD_COUNT
+2. VMCS_VM_ENTRY_INTR_INFO 
+
+solutions:
+- go again through the fields with vmread
+- use bochs / another computer
+- add the general configuration 
+
+
+vmlaunch check:
+Attempt to load guest state and PDPTRs as appropriate
+
+
+
+
+
