@@ -31,11 +31,11 @@ OBJECT_DIR = build
 GRUB_DIR = $(OBJECT_DIR)/iso/boot
 SRC_DIR = src
 
-C_SRC_FILES = $(wildcard src/*/*.c)
-ASM_SRC_FILES = $(wildcard src/*/entrypoint.asm)
+C_SRC_FILES = $(wildcard $(SRC_DIR)/*/*.c)
+ASM_SRC_FILES = $(wildcard $(SRC_DIR)/vmm/*.asm) $(wildcard $(SRC_DIR)/boot/entrypoint.asm)
 
-C_FILES = $(C_SRC_FILES:src/%=%)
-ASM_FILES = $(ASM_SRC_FILES:src/%=%)
+C_FILES = $(C_SRC_FILES:$(SRC_DIR)/%=%)
+ASM_FILES = $(ASM_SRC_FILES:$(SRC_DIR)/%=%)
 
 
 OBJECT_FILES = $(addprefix $(OBJECT_DIR)/,$(C_FILES:.c=.o)) \

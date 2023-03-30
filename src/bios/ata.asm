@@ -1,4 +1,6 @@
 ; ATA - advance Technology Attachment
+%define DAP_ADDRESS 0x500
+%define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
 
 read_disk:
 	mov si, DAP_ADDRESS

@@ -1,5 +1,4 @@
 
-
 ;------------------------------------------------------------------
 ; Calls a real mode function
 ; di - points to the real mode function
@@ -21,8 +20,6 @@ call_real_mode_function:
     ret
 
 ;------------------------------------------------------------------
-
-
 
 ;------------------------------------------------------------------
 ; Jumps from real mode to protected mode

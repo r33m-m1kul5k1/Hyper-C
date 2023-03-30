@@ -8,7 +8,6 @@
 #define DRIVE_NUMBER_ADDRESS 0x600
 #define DRIVE_A 0x80
 
-
 extern void real_mode_start();
 extern void real_mode_end();
 extern void real_mode_callback(void (*)());
@@ -20,16 +19,15 @@ void load_mbr();
 
 
 void initialize_host() {
-    
     set_log_level(DEBUG_LEVEL);
     LOG_INFO("initializing machine");
-    
 
     // initialize_bios();
     // load_mbr();
 
     enter_vmx_root();
     configure_vmcs();
+    launch_vm();
 }
 
 /*
@@ -59,9 +57,9 @@ Loads the Master Boot Record
 */
 void load_mbr() {
 
-    int *drive_number_ptr = (int*)DRIVE_NUMBER_ADDRESS;
-    disk_address_packet_t *dap_ptr = (disk_address_packet_t*)DAP_ADDRESS;
-    char *mbr = (char*)0x7c00;
+    int *drive_number_ptr = (int *)DRIVE_NUMBER_ADDRESS;
+    disk_address_packet_t *dap_ptr = (disk_address_packet_t *)DAP_ADDRESS;
+    char *mbr = (char *)0x7c00;
 
     dap_ptr->size = 0x10;
     dap_ptr->unused = 0x0;

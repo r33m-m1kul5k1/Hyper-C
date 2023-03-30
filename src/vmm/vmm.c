@@ -28,7 +28,6 @@
 #define CANONICAL_SELECTOR 0xff
 #define VMCS_SELECTOR_UNUSABLE (1 << 16)
 #define DESCRIPTOR_MAX_LIMIT 0xfffff
-#define IA32_MAX_LIMIT 0xffffffff
 #define GUEST_DS_ACCESS_RIGHTS 0xc093
 #define GUEST_CS_ACCESS_RIGHTS 0xa09b
 #define GUEST_TR_ACCESS_RIGHTS 0xc08b
@@ -38,9 +37,12 @@
 #define IA32_DEBUGCTL_DEFAULT0 0xffc3
 
 vm_instruction_error_t check_vm_instruction_error();
+void initialize_vmx_regions(char* vmxon_region, char* vmcs_region);
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
 void vm_exit_handler();
 void vm_entry_handler();
+
+extern void _vmlaunch_handler();
 
 // SDM 24.4.2
 enum {
@@ -158,10 +160,8 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_CR3, read_cr3());
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
-    vmwrite(VMCS_GUEST_RIP, (qword_t)vm_entry_handler);
-    vmwrite(VMCS_GUEST_RSP, STACK_TOP); // may be 0 in the future
-
-    LOG_DEBUG("rflags default zero: %b.\noriginal default one is 0x1fffd7 ", RFLAGS_DEFAULT0);
+    vmwrite(VMCS_GUEST_RIP, (qword_t)vm_entry_handler); 
+    vmwrite(VMCS_GUEST_RSP, 0); // will be changed in handlers.asm
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
     vmwrite(VMCS_GUEST_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & 0xffffffff);
@@ -211,7 +211,6 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_LDTR_LIMIT, 0xff);
     vmwrite(VMCS_GUEST_LDTR_AR_BYTES, VMCS_SELECTOR_UNUSABLE);
     // Descriptor tables
-    
     vmwrite(VMCS_GUEST_GDTR_BASE, gdtr.base);
     vmwrite(VMCS_GUEST_IDTR_LIMIT, gdtr.limit);
     vmwrite(VMCS_GUEST_IDTR_BASE, idtr.base);
@@ -220,29 +219,6 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_ACTIVITY_STATE, CPU_STATE_ACTIVE);
     vmwrite(VMCS_GUEST_INTERRUPTIBILITY_INFO, DEFAULT_INTERRUPTIBILITY_STATE);
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
-    
-    // checks vmcs, TODO: move this code to main
-    vmlaunch();
-    PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
-}
-
-dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
-    dword_t default1 = read_msr(defualt_bits_msr) & 0xffffffffUL;
-    dword_t default0 = read_msr(defualt_bits_msr) >> 32;
-
-    if (BIT_N(read_msr(MSR_IA32_VMX_BASIC), 55)) {
-        default1 = read_msr(true_defualt_bits_msr) & 0xffffffffUL;
-        default0 = read_msr(true_defualt_bits_msr) >> 32;    
-    }
-
-    return default1 & default0;
-}
-
-vm_instruction_error_t check_vm_instruction_error() {
-    qword_t error_code = UNDEFINE_VM_INSTRUCTION_ERROR;
-    error_code = vmread(VMCS_VM_INSTRUCTION_ERROR);
-
-    return (vm_instruction_error_t)error_code;
 }
 
 void vm_exit_handler() {
@@ -263,4 +239,29 @@ void vm_exit_handler() {
 void vm_entry_handler() {
     LOG_INFO("VM-entry occurred");
     hlt_loop();
+}
+
+void launch_vm() {
+    LOG_INFO("Launching the VM");
+    _vmlaunch_handler();
+    PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
+}
+
+dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
+    dword_t default1 = read_msr(defualt_bits_msr) & 0xffffffffUL;
+    dword_t default0 = read_msr(defualt_bits_msr) >> 32;
+
+    if (BIT_N(read_msr(MSR_IA32_VMX_BASIC), 55)) {
+        default1 = read_msr(true_defualt_bits_msr) & 0xffffffffUL;
+        default0 = read_msr(true_defualt_bits_msr) >> 32;    
+    }
+
+    return default1 & default0;
+}
+
+vm_instruction_error_t check_vm_instruction_error() {
+    qword_t error_code = UNDEFINE_VM_INSTRUCTION_ERROR;
+    error_code = vmread(VMCS_VM_INSTRUCTION_ERROR);
+
+    return (vm_instruction_error_t)error_code;
 }

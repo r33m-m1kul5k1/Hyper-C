@@ -22,13 +22,10 @@
 ; Free memory regions
 ; 0x500  - 0x7BFF => 28 KiB
 %define STACK_TOP 0x7BFF
-%define DAP_ADDRESS 0x500
-%define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
+
 ; 0x7E00 - 0x7FFFF - 480 KiB
 
 %define IA32e_PAGING_BASE 0x12000
-
-
 ;----------------------------------------------------
 
 ;-----------------------MSRs-------------------------
@@ -40,7 +37,6 @@
 %define PAGE_WRITE (1 << 1)
 %define PAGE_SIZE (1 << 7)
 ;----------------------------------------------------
-
 
 ;----------------------------------------------------
 ; Stores a qword in little endian order
@@ -55,7 +51,6 @@
     pop ebx
 %endmacro
 ;----------------------------------------------------
-
 
 ;----------------------------------------------------
 ; Set the data segment registers
