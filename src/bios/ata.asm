@@ -1,7 +1,4 @@
 ; ATA - advance Technology Attachment
-%define DAP_ADDRESS 0x500
-%define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
-
 read_disk:
 	mov si, DAP_ADDRESS
 	mov ah, 0x42						; read hard disk in LBA mode

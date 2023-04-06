@@ -80,5 +80,18 @@ Attempt to load guest state and PDPTRs as appropriate
 
 
 
+msr monitor:
+1. one bit for each msr. meaning:
+MSR 0 -> bitmap 0
+MSR 1 -> bitmap 01
+MSR 2 -> bitmap 10
+MSR A -> bitmap 100 0000 0000
+MSR F01 -> bitmap 
 
 
+vmexit wrapper:
+
+vmresume -> takes the vmcs guest state area and loads it:
+
+rsp -> the vmm stack
+rip -> next instruction in the vmm 

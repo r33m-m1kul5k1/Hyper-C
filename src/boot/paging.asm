@@ -23,6 +23,7 @@ popa
 ret
 
 ; Setup: one pml4, one pdpt, `MEMORY_SIZE` pds that maps to 2Mib memory chunks
+; Total tables's size: 1 + 1 + MEMORY_SIZE
 setup_pml4_map:
 
     ; setup pml4 entry

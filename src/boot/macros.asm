@@ -22,9 +22,12 @@
 ; Free memory regions
 ; 0x500  - 0x7BFF => 28 KiB
 %define STACK_TOP 0x7BFF
-
+%define DAP_ADDRESS 0x500
+%define DRIVE_NUMBER_ADDRESS DAP_ADDRESS + 0x100
 ; 0x7E00 - 0x7FFFF - 480 KiB
+; Paging size => 2 + MEMORY_SIZE pages
 %define IA32e_PAGING_BASE 0x12000
+%define MSR_BITMAP 0x18000
 ;----------------------------------------------------
 
 ;-----------------------MSRs-------------------------

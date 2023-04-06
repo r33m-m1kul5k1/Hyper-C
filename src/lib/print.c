@@ -1,13 +1,14 @@
+#include <stdbool.h>
 #include "lib/print.h"
 #include "lib/log.h"
 #include "lib/utils.h"
 #include "drivers/serial.h"
 
-const char *HEX_DIGITS = "0123456789abcdef";
+const char *HEX_DIGITS = "0123456789ABCDEF";
 
-char *add_number_prefix(char *str, int *number, int base)
+char *add_number_prefix(char *str, int *number, int base, bool is_unsigned)
 {
-    if (*number < 0)
+    if (*number < 0 && !is_unsigned)
     {
         *number *= -1;
         *str = '-';
@@ -28,19 +29,19 @@ char *add_number_prefix(char *str, int *number, int base)
     return str;
 }
 
-void sprint_integer(char *str, int number, int base)
+void sprint_integer(char *str, int number, int base, bool is_unsigned)
 {
     int value = number;
     char number_buffer[MAXIMUM_BINARY_LENGTH];
     number_buffer[MAXIMUM_BINARY_LENGTH] = '\0';
     
 
-    str = add_number_prefix(str, &value, base);
+    str = add_number_prefix(str, &value, base, is_unsigned);
 
     for (int i = MAXIMUM_BINARY_LENGTH - 1; i >= 0; i--)
     {
-        number_buffer[i] = HEX_DIGITS[value % base];
-        value = value / base;
+        number_buffer[i] = HEX_DIGITS[(unsigned)value % base];
+        value = (unsigned)value / base;
     }
 
     if (number == 0)
@@ -61,6 +62,7 @@ void vsprintf(char *str, const char *fmt, va_list args)
 {
     char *buffer, c;
     int number;
+    bool is_unsigned = false;
 
     for (;*fmt != '\0'; fmt++)
     {
@@ -90,13 +92,14 @@ void vsprintf(char *str, const char *fmt, va_list args)
 
         case 'd':
             number = va_arg(args, int);
-            sprint_integer(str, number, 10);
+            sprint_integer(str, number, 10, is_unsigned);
             str += strlen(str);
             break;
 
         case 'b':
+            binary_print:
             number = va_arg(args, int);
-            sprint_integer(str, number, 2);
+            sprint_integer(str, number, 2, is_unsigned);
             str += strlen(str);
 
             break;
@@ -104,12 +107,22 @@ void vsprintf(char *str, const char *fmt, va_list args)
         case 'x':
             hex_print:
             number = va_arg(args, int);
-            sprint_integer(str, number, 16);
+            sprint_integer(str, number, 16, is_unsigned);
             str += strlen(str);
             break;
 
         case 'p':
             goto hex_print;
+            break;
+        
+        case 'u':
+            is_unsigned = true;
+            goto hex_print;
+            break;
+        
+        case 'U':
+            is_unsigned = true;
+            goto binary_print;
             break;
             
         default:

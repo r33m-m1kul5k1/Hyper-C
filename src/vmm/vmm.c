@@ -1,5 +1,6 @@
 #include "vmm/vmm.h"
 #include "vmm/vmexit.h"
+#include "vmm/msr_bitmap.h"
 #include "hardware/registers.h"
 #include "hardware/miscellaneous.h"
 #include "hardware/vmcs.h"
@@ -23,6 +24,8 @@
 #define PAGE_FRAME_SIZE 0x1000
 #define STACK_TOP 0x7BFF
 #define GUEST_REGISTERS_STATE 0x7FF00
+#define MSR_BITMAP_ADDRESS 0x18000
+#define EFER_MSR 0xC0000080
 
 /* VMCS related data */
 #define CANONICAL_ADDRESS 0xffffffff
@@ -138,18 +141,16 @@ void configure_vmcs() {
     dword_t default_bits;
     // pin base VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PINBASED_CTLS, MSR_IA32_VMX_TRUE_PINBASED_CTLS);
-    // bits 1, 2, 4 must contain inside default1
     ASSERT(BIT_N(default_bits, 1) && BIT_N(default_bits, 2) && BIT_N(default_bits, 4));
     vmwrite(VMCS_PIN_BASED_VM_EXEC_CONTROL, default_bits);
 
     // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
-    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits | CPU_BASED_HLT_EXITING);
-    // CR3-target controls 24.6.7, `mov cr3` will cause VM exit at default
+    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits | CPU_BASED_HLT_EXITING | CPU_BASED_ACTIVATE_MSR_BITMAP);
 
     // VM-exit control fields
     default_bits = get_default_bits(MSR_IA32_VMX_EXIT_CTLS, MSR_IA32_VMX_TRUE_EXIT_CTLS);
-    vmwrite(VMCS_VM_EXIT_CONTROLS, default_bits | VM_EXIT_IA32E_MODE); // load & save efer?
+    vmwrite(VMCS_VM_EXIT_CONTROLS, default_bits | VM_EXIT_IA32E_MODE);
 
     // VM-entry control fields
     default_bits = get_default_bits(MSR_IA32_VMX_ENTRY_CTLS, MSR_IA32_VMX_TRUE_ENTRY_CTLS);
@@ -176,7 +177,6 @@ void configure_vmcs() {
 
     vmwrite(VMCS_HOST_FS_BASE, GUEST_REGISTERS_STATE);
     vmwrite(VMCS_HOST_GS_BASE, 0ULL);
-    // https://www.felixcloutier.com/x86/ltr
     vmwrite(VMCS_HOST_TR_BASE, read_ds());
     gdtr_t gdtr = read_gdtr();
     idtr_t idtr = read_idtr();
@@ -249,6 +249,10 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_ACTIVITY_STATE, CPU_STATE_ACTIVE);
     vmwrite(VMCS_GUEST_INTERRUPTIBILITY_INFO, DEFAULT_INTERRUPTIBILITY_STATE);
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
+
+    vmwrite(VMCS_MSR_BITMAP, (qword_t)MSR_BITMAP_ADDRESS);
+    memset((void *)MSR_BITMAP_ADDRESS, 0, PAGE_FRAME_SIZE);
+    monitor_rdmsr((byte_t *)MSR_BITMAP_ADDRESS, EFER_MSR);
 }
 
 void vmexit_handler() {
@@ -263,6 +267,15 @@ void vmexit_handler() {
         case EXIT_REASON_HLT:
             status = halt_handler(state);
             break;
+
+        case EXIT_REASON_MSR_READ:
+            status = rdmsr_handler(state);
+            break;
+
+        case EXIT_REASON_MSR_WRITE:
+            status = wrmsr_handler(state);
+            break;
+
         default:
             PANIC("unsupported exit reason");
     }
@@ -274,7 +287,9 @@ void vmexit_handler() {
 
 void vmentry_handler() {
     LOG_INFO("VM-entry occurred");
-    asm volatile("hlt");
+    read_msr(EFER_MSR);
+    
+    LOG_DEBUG("After handling rdmsr");
     asm volatile("hlt");
     while (1) {}
 }
