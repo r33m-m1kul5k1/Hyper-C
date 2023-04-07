@@ -93,5 +93,18 @@ vmexit wrapper:
 
 vmresume -> takes the vmcs guest state area and loads it:
 
-rsp -> the vmm stack
-rip -> next instruction in the vmm 
+rsp -> the host stack (resume_vm | )
+
+stack pointer: 0x7ba7 -> from the fs segment
+
+
+rip -> next instruction in the vmm (this value is right) -> read_msr end
+
+vm-exit:
+1. stack is loaded to fs -> works
+2. stack is saved in in the guest state area -> works, most likely
+3. vmresume gives the incorrect stack -> a random address
+
+ok ok:
+1. rbp and the other registers were changed after restored
+2. the host stack overflowed with the guest stack :)

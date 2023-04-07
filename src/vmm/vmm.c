@@ -23,6 +23,7 @@
 /* Paging related data */
 #define PAGE_FRAME_SIZE 0x1000
 #define STACK_TOP 0x7BFF
+#define GUEST_STACK_TOP 0x7F000
 #define GUEST_REGISTERS_STATE 0x7FF00
 #define MSR_BITMAP_ADDRESS 0x18000
 #define EFER_MSR 0xC0000080
@@ -45,9 +46,7 @@ void initialize_vmx_regions(char* vmxon_region, char* vmcs_region);
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
 void vmexit_handler();
 void vmentry_handler();
-void resume_vm();
 
-extern void _vmlaunch_wrapper();
 extern void _vmexit_wrapper();
 
 const char *VM_INSTRUCTION_ERROR_STRINGS[] = {
@@ -191,7 +190,7 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
     vmwrite(VMCS_GUEST_RIP, (qword_t)vmentry_handler); 
-    vmwrite(VMCS_GUEST_RSP, 0); // will be changed in wrappers.asm
+    vmwrite(VMCS_GUEST_RSP, GUEST_STACK_TOP);
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
     vmwrite(VMCS_GUEST_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & 0xffffffff);
@@ -296,12 +295,7 @@ void vmentry_handler() {
 
 void launch_vm() {
     LOG_INFO("Launching the VM");
-    _vmlaunch_wrapper();
-    PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
-}
-
-void resume_vm() {
-    vmresume();
+    vmlaunch();
     PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 

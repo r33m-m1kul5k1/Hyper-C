@@ -2,17 +2,10 @@
 %define VMCS_GUEST_RSP 0x0000681c
 %define VMCS_GUEST_RIP 0x0000681e
 
-global _vmlaunch_wrapper
 global _vmexit_wrapper
 extern vmexit_handler
-extern resume_vm
 
-; Sets the guest stack to the current stack pointer
-_vmlaunch_wrapper:
-    mov rax, VMCS_GUEST_RSP
-    vmwrite rax, rsp
-    vmlaunch
-    ret
+    
 ; Saves the guest's registers, and enable the hv to modify this state 
 _vmexit_wrapper:
     ; host's fs base points to the guest registers state
@@ -66,6 +59,7 @@ _vmexit_wrapper:
     mov r14, [fs:0x68] 
     mov r15, [fs:0x70]
 
-    call resume_vm
+    ; we cannot call a function here because it may change important registers such as rbp
+    vmresume
     
     
