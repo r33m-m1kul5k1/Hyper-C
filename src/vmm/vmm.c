@@ -39,7 +39,7 @@
 #define IA32_DEBUGCTL_DEFAULT0 0xffc3
 
 vm_instruction_error_t check_vm_instruction_error();
-dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
+dword_t get_default_bits(dword_t default_bits_msr, dword_t true_default_bits_msr);
 void vmexit_handler();
 void vmentry_handler();
 
@@ -136,6 +136,10 @@ void configure_vmcs(cpu_data_t *cpu_data) {
     // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
     vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits | CPU_BASED_HLT_EXITING | CPU_BASED_ACTIVATE_MSR_BITMAP);
+    
+    // secondary-processor based VM-execution control fields
+    default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS2, MSR_IA32_VMX_PROCBASED_CTLS2); // for this control there is no true default bits
+    vmwrite(VMCS_SECONDARY_VM_EXEC_CONTROL, default_bits | CPU_BASED_CTL2_ENABLE_EPT | CPU_BASED_CTL2_UNRESTRICTED_GUEST);
 
     // VM-exit control fields
     default_bits = get_default_bits(MSR_IA32_VMX_EXIT_CTLS, MSR_IA32_VMX_TRUE_EXIT_CTLS);
@@ -241,6 +245,7 @@ void configure_vmcs(cpu_data_t *cpu_data) {
 
     vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
     monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
+    vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
 }
 
 void vmexit_handler() {
@@ -288,13 +293,13 @@ void launch_vm() {
     PANIC("VM launch faild, VM-instruction error: %s", VM_INSTRUCTION_ERROR_STRINGS[check_vm_instruction_error()]);
 }
 
-dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr) {
-    dword_t default1 = read_msr(defualt_bits_msr) & 0xffffffffUL;
-    dword_t default0 = read_msr(defualt_bits_msr) >> 32;
+dword_t get_default_bits(dword_t default_bits_msr, dword_t true_default_bits_msr) {
+    dword_t default1 = read_msr(default_bits_msr) & 0xffffffffUL;
+    dword_t default0 = read_msr(default_bits_msr) >> 32;
 
     if (BIT_N(read_msr(MSR_IA32_VMX_BASIC), 55)) {
-        default1 = read_msr(true_defualt_bits_msr) & 0xffffffffUL;
-        default0 = read_msr(true_defualt_bits_msr) >> 32;    
+        default1 = read_msr(true_default_bits_msr) & 0xffffffffUL;
+        default0 = read_msr(true_default_bits_msr) >> 32;    
     }
 
     return default1 & default0;

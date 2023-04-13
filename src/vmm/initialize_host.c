@@ -20,7 +20,7 @@ void load_mbr();
 
 
 void initialize_host() {
-    set_log_level(INFO_LEVEL);
+    set_log_level(DEBUG_LEVEL);
     LOG_INFO("initializing machine");
 
     cpu_data_t *cpu_data = (cpu_data_t *)CPU_DATA_ADDRESS;
@@ -30,7 +30,7 @@ void initialize_host() {
     LOG_INFO("[vmcs]: %u", cpu_data->vmcs);
     LOG_INFO("[extended paging tables]: %u", &cpu_data->epts);
     LOG_INFO("[msr bitmaps]: %u", cpu_data->msr_bitmaps);
-     LOG_INFO("[guest registers]: %u", &cpu_data->guest_cpu_state.registers);
+    LOG_INFO("[guest registers]: %u", &cpu_data->guest_cpu_state.registers);
     LOG_INFO("[guest stack]: %u", cpu_data->guest_cpu_state.stack_top);
     
     // initialize_bios();
