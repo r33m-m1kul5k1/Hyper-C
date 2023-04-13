@@ -82,8 +82,7 @@ enum {
     CPU_STATE_WAIT_FOR_SIPI
 } typedef activity_state_t;
 
-void enter_vmx_root(vmm_data_t *shared_cpu_data) {
-    cpu_data_t *cpu_data = &shared_cpu_data->cpu_data;
+void enter_vmx_root(cpu_data_t *cpu_data) {
     // Note that PE & PG should be 0 with "unrestricted guest".
     write_cr0((read_cr0() | CR0_NE_ENABLE | read_msr(MSR_IA32_VMX_CR0_FIXED0)) & read_msr(MSR_IA32_VMX_CR0_FIXED1));
     write_cr4((read_cr4() | CR4_VMX_ENABLE | read_msr(MSR_IA32_VMX_CR4_FIXED0)) & read_msr(MSR_IA32_VMX_CR4_FIXED1));
@@ -126,8 +125,7 @@ void enter_vmx_root(vmm_data_t *shared_cpu_data) {
     LOG_INFO("entered VMX-root operation");
 }
 
-void configure_vmcs(vmm_data_t *shared_cpu_data) {
-    cpu_data_t *cpu_data = &shared_cpu_data->cpu_data;
+void configure_vmcs(cpu_data_t *cpu_data) {
     dword_t default_bits;
     
     // pin base VM-execution control fields
@@ -147,7 +145,7 @@ void configure_vmcs(vmm_data_t *shared_cpu_data) {
     default_bits = get_default_bits(MSR_IA32_VMX_ENTRY_CTLS, MSR_IA32_VMX_TRUE_ENTRY_CTLS);
     vmwrite(VMCS_VM_ENTRY_CONTROLS, default_bits | VM_ENTRY_IA32E_MODE);
 
-    // Host state area
+    // Host guest_state area
     vmwrite(VMCS_HOST_CR0, read_cr0());
     vmwrite(VMCS_HOST_CR4, read_cr4());
     vmwrite(VMCS_HOST_CR3, read_cr3());
@@ -166,7 +164,7 @@ void configure_vmcs(vmm_data_t *shared_cpu_data) {
     vmwrite(VMCS_HOST_GS_SELECTOR, read_gs());
     vmwrite(VMCS_HOST_TR_SELECTOR, read_ds());
 
-    vmwrite(VMCS_HOST_FS_BASE, (qword_t)&cpu_data->cpu_state);
+    vmwrite(VMCS_HOST_FS_BASE, (qword_t)&cpu_data->guest_cpu_state);
     vmwrite(VMCS_HOST_GS_BASE, 0ULL);
     vmwrite(VMCS_HOST_TR_BASE, read_ds());
     gdtr_t gdtr = read_gdtr();
@@ -176,13 +174,13 @@ void configure_vmcs(vmm_data_t *shared_cpu_data) {
     vmwrite(VMCS_HOST_GDTR_BASE, gdtr.base);
     vmwrite(VMCS_HOST_IDTR_BASE, idtr.base);
 
-    // Guest state area
+    // Guest guest_state area
     vmwrite(VMCS_GUEST_CR0, read_cr0());
     vmwrite(VMCS_GUEST_CR3, read_cr3());
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
     vmwrite(VMCS_GUEST_RIP, (qword_t)vmentry_handler); 
-    vmwrite(VMCS_GUEST_RSP, (qword_t)cpu_data->cpu_state.guest_stack_top);
+    vmwrite(VMCS_GUEST_RSP, (qword_t)cpu_data->guest_cpu_state.stack_top);
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
     vmwrite(VMCS_GUEST_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & 0xffffffff);
@@ -241,29 +239,29 @@ void configure_vmcs(vmm_data_t *shared_cpu_data) {
     vmwrite(VMCS_GUEST_INTERRUPTIBILITY_INFO, DEFAULT_INTERRUPTIBILITY_STATE);
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
 
-    vmwrite(VMCS_MSR_BITMAP, (qword_t)shared_cpu_data->msr_bitmaps);
-    monitor_rdmsr(shared_cpu_data->msr_bitmaps, EFER_MSR);
+    vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
+    monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
 }
 
 void vmexit_handler() {
     exit_reason_t exit_reason = { 0 };
     handler_status_t status = HANDLER_FAILURE;
-    cpu_state_t *state = (cpu_state_t *)vmread(VMCS_HOST_FS_BASE);
+    guest_cpu_state_t *guest_state = (guest_cpu_state_t *)vmread(VMCS_HOST_FS_BASE);
 
     vmread_with_ptr(VMCS_VM_EXIT_REASON, (qword_t *)&exit_reason);
     LOG_INFO("VM-exit reason: %s", EXIT_REASON_STRINGS[exit_reason.basic_exit_reason]);
 
     switch (exit_reason.basic_exit_reason) {
         case EXIT_REASON_HLT:
-            status = halt_handler(state);
+            status = halt_handler(guest_state);
             break;
 
         case EXIT_REASON_MSR_READ:
-            status = rdmsr_handler(state);
+            status = rdmsr_handler(guest_state);
             break;
 
         case EXIT_REASON_MSR_WRITE:
-            status = wrmsr_handler(state);
+            status = wrmsr_handler(guest_state);
             break;
 
         default:

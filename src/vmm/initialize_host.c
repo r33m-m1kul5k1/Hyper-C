@@ -3,7 +3,7 @@
 #include "lib/log.h"
 #include "hardware/types.h"
 
-#define VMM_DATA_LOCATION 0x50000
+#define CPU_DATA_ADDRESS 0x50000
 #define REAL_MODE_BASE_ADDRESS 0x7E00
 #define DAP_ADDRESS 0x500
 #define DRIVE_NUMBER_ADDRESS 0x600
@@ -20,24 +20,23 @@ void load_mbr();
 
 
 void initialize_host() {
-    set_log_level(DEBUG_LEVEL);
+    set_log_level(INFO_LEVEL);
     LOG_INFO("initializing machine");
 
-    vmm_data_t *vmm_data = (vmm_data_t *)VMM_DATA_LOCATION;
-    memset((void *)vmm_data, 0, sizeof(vmm_data_t));
+    cpu_data_t *cpu_data = (cpu_data_t *)CPU_DATA_ADDRESS;
+    memset((void *)cpu_data, 0, sizeof(cpu_data_t));
     LOG_INFO("VMM memory layout:");
-    LOG_INFO("[vmxon region]: %u", vmm_data->cpu_data.vmxon_region);
-    LOG_INFO("[vmcs]: %u", vmm_data->cpu_data.vmcs);
-    LOG_INFO("[guest registers]: %u", &vmm_data->cpu_data.cpu_state.guest_registers);
-    LOG_INFO("[guest stack]: %u", vmm_data->cpu_data.cpu_state.guest_stack_top);
-    LOG_INFO("[extended paging tables]: %u", &vmm_data->epts);
-    LOG_INFO("[msr bitmaps]: %u", vmm_data->msr_bitmaps);
+    LOG_INFO("[vmxon region]: %u", cpu_data->vmxon_region);
+    LOG_INFO("[vmcs]: %u", cpu_data->vmcs);
+    LOG_INFO("[extended paging tables]: %u", &cpu_data->epts);
+    LOG_INFO("[msr bitmaps]: %u", cpu_data->msr_bitmaps);
+     LOG_INFO("[guest registers]: %u", &cpu_data->guest_cpu_state.registers);
+    LOG_INFO("[guest stack]: %u", cpu_data->guest_cpu_state.stack_top);
     
     // initialize_bios();
     // load_mbr();
-    
-    enter_vmx_root(vmm_data);
-    configure_vmcs(vmm_data);
+    enter_vmx_root(cpu_data);
+    configure_vmcs(cpu_data);
     launch_vm();
 }
 
