@@ -108,3 +108,10 @@ vm-exit:
 ok ok:
 1. rbp and the other registers were changed after restored
 2. the host stack overflowed with the guest stack :)
+
+the bug:
+changed the vmm memory layout and the guest registers are changed some how.
+
+ideas:
+1. the memory is changed during a vmexit. - to check
+2. the memory address the too high, then when updating rip, it doesn't changes

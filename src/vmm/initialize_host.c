@@ -3,6 +3,7 @@
 #include "lib/log.h"
 #include "hardware/types.h"
 
+#define VMM_DATA_LOCATION 0x50000
 #define REAL_MODE_BASE_ADDRESS 0x7E00
 #define DAP_ADDRESS 0x500
 #define DRIVE_NUMBER_ADDRESS 0x600
@@ -22,11 +23,21 @@ void initialize_host() {
     set_log_level(DEBUG_LEVEL);
     LOG_INFO("initializing machine");
 
+    vmm_data_t *vmm_data = (vmm_data_t *)VMM_DATA_LOCATION;
+    memset((void *)vmm_data, 0, sizeof(vmm_data_t));
+    LOG_INFO("VMM memory layout:");
+    LOG_INFO("[vmxon region]: %u", vmm_data->cpu_data.vmxon_region);
+    LOG_INFO("[vmcs]: %u", vmm_data->cpu_data.vmcs);
+    LOG_INFO("[guest registers]: %u", &vmm_data->cpu_data.cpu_state.guest_registers);
+    LOG_INFO("[guest stack]: %u", vmm_data->cpu_data.cpu_state.guest_stack_top);
+    LOG_INFO("[extended paging tables]: %u", &vmm_data->epts);
+    LOG_INFO("[msr bitmaps]: %u", vmm_data->msr_bitmaps);
+    
     // initialize_bios();
     // load_mbr();
-
-    enter_vmx_root();
-    configure_vmcs();
+    
+    enter_vmx_root(vmm_data);
+    configure_vmcs(vmm_data);
     launch_vm();
 }
 

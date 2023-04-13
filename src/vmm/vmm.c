@@ -1,6 +1,6 @@
 #include "vmm/vmm.h"
 #include "vmm/vmexit.h"
-#include "vmm/msr_bitmap.h"
+#include "vmm/msr_bitmaps.h"
 #include "hardware/registers.h"
 #include "hardware/miscellaneous.h"
 #include "hardware/vmcs.h"
@@ -20,12 +20,9 @@
 #define VMXON_REGION_ADDRESS 0x10000
 #define VMCS_REGION_ADDRESS 0x11000
 
-/* Paging related data */
-#define PAGE_FRAME_SIZE 0x1000
+/* Memory related data */
 #define STACK_TOP 0x7BFF
-#define GUEST_STACK_TOP 0x7F000
 #define GUEST_REGISTERS_STATE 0x7FF00
-#define MSR_BITMAP_ADDRESS 0x18000
 #define EFER_MSR 0xC0000080
 
 /* VMCS related data */
@@ -42,7 +39,6 @@
 #define IA32_DEBUGCTL_DEFAULT0 0xffc3
 
 vm_instruction_error_t check_vm_instruction_error();
-void initialize_vmx_regions(char* vmxon_region, char* vmcs_region);
 dword_t get_default_bits(dword_t defualt_bits_msr, dword_t true_defualt_bits_msr);
 void vmexit_handler();
 void vmentry_handler();
@@ -86,7 +82,8 @@ enum {
     CPU_STATE_WAIT_FOR_SIPI
 } typedef activity_state_t;
 
-void enter_vmx_root() {    
+void enter_vmx_root(vmm_data_t *shared_cpu_data) {
+    cpu_data_t *cpu_data = &shared_cpu_data->cpu_data;
     // Note that PE & PG should be 0 with "unrestricted guest".
     write_cr0((read_cr0() | CR0_NE_ENABLE | read_msr(MSR_IA32_VMX_CR0_FIXED0)) & read_msr(MSR_IA32_VMX_CR0_FIXED1));
     write_cr4((read_cr4() | CR4_VMX_ENABLE | read_msr(MSR_IA32_VMX_CR4_FIXED0)) & read_msr(MSR_IA32_VMX_CR4_FIXED1));
@@ -118,26 +115,21 @@ void enter_vmx_root() {
     write_msr(MSR_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & IA32_DEBUGCTL_DEFAULT0);
 	write_dr7(read_dr7() & 0xffffffff);
      
-    initialize_vmx_regions((char *)VMXON_REGION_ADDRESS, (char *)VMCS_REGION_ADDRESS);
+    // initialize vmm regions
+    *(dword_t *)cpu_data->vmxon_region = read_msr(MSR_IA32_VMX_BASIC);
+    *(dword_t *)cpu_data->vmcs = read_msr(MSR_IA32_VMX_BASIC);
     
-    ASSERT(vmxon((void *)VMXON_REGION_ADDRESS) == VM_SUCCESS);
-    ASSERT(vmclear((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
-    ASSERT(vmptrld((void *)VMCS_REGION_ADDRESS) == VM_SUCCESS);
+    ASSERT(vmxon((void *)cpu_data->vmxon_region) == VM_SUCCESS);
+    ASSERT(vmclear((void *)cpu_data->vmcs) == VM_SUCCESS);
+    ASSERT(vmptrld((void *)cpu_data->vmcs) == VM_SUCCESS);
     
     LOG_INFO("entered VMX-root operation");
 }
 
-void initialize_vmx_regions(char* vmxon_region, char* vmcs_region) {
-
-    memset((void *)vmxon_region, 0, PAGE_FRAME_SIZE);
-    memset((void *)vmcs_region, 0, PAGE_FRAME_SIZE);
-
-    *(dword_t *)vmxon_region = read_msr(MSR_IA32_VMX_BASIC);
-    *(dword_t *)vmcs_region = read_msr(MSR_IA32_VMX_BASIC);
-}
-
-void configure_vmcs() {
+void configure_vmcs(vmm_data_t *shared_cpu_data) {
+    cpu_data_t *cpu_data = &shared_cpu_data->cpu_data;
     dword_t default_bits;
+    
     // pin base VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PINBASED_CTLS, MSR_IA32_VMX_TRUE_PINBASED_CTLS);
     ASSERT(BIT_N(default_bits, 1) && BIT_N(default_bits, 2) && BIT_N(default_bits, 4));
@@ -174,7 +166,7 @@ void configure_vmcs() {
     vmwrite(VMCS_HOST_GS_SELECTOR, read_gs());
     vmwrite(VMCS_HOST_TR_SELECTOR, read_ds());
 
-    vmwrite(VMCS_HOST_FS_BASE, GUEST_REGISTERS_STATE);
+    vmwrite(VMCS_HOST_FS_BASE, (qword_t)&cpu_data->cpu_state);
     vmwrite(VMCS_HOST_GS_BASE, 0ULL);
     vmwrite(VMCS_HOST_TR_BASE, read_ds());
     gdtr_t gdtr = read_gdtr();
@@ -190,7 +182,7 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
     vmwrite(VMCS_GUEST_RIP, (qword_t)vmentry_handler); 
-    vmwrite(VMCS_GUEST_RSP, GUEST_STACK_TOP);
+    vmwrite(VMCS_GUEST_RSP, (qword_t)cpu_data->cpu_state.guest_stack_top);
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
     vmwrite(VMCS_GUEST_IA32_DEBUGCTL, read_msr(MSR_IA32_DEBUGCTL) & 0xffffffff);
@@ -249,15 +241,14 @@ void configure_vmcs() {
     vmwrite(VMCS_GUEST_INTERRUPTIBILITY_INFO, DEFAULT_INTERRUPTIBILITY_STATE);
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
 
-    vmwrite(VMCS_MSR_BITMAP, (qword_t)MSR_BITMAP_ADDRESS);
-    memset((void *)MSR_BITMAP_ADDRESS, 0, PAGE_FRAME_SIZE);
-    monitor_rdmsr((byte_t *)MSR_BITMAP_ADDRESS, EFER_MSR);
+    vmwrite(VMCS_MSR_BITMAP, (qword_t)shared_cpu_data->msr_bitmaps);
+    monitor_rdmsr(shared_cpu_data->msr_bitmaps, EFER_MSR);
 }
 
 void vmexit_handler() {
     exit_reason_t exit_reason = { 0 };
     handler_status_t status = HANDLER_FAILURE;
-    registers_t *state = (registers_t *)GUEST_REGISTERS_STATE;
+    cpu_state_t *state = (cpu_state_t *)vmread(VMCS_HOST_FS_BASE);
 
     vmread_with_ptr(VMCS_VM_EXIT_REASON, (qword_t *)&exit_reason);
     LOG_INFO("VM-exit reason: %s", EXIT_REASON_STRINGS[exit_reason.basic_exit_reason]);
