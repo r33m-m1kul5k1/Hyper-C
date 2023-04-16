@@ -7,15 +7,18 @@ EPT in general -> 28.3
 
 #include "hardware/types.h"
 
-#define TABLE_SIZE 1 << 9
+
+#define MEMORY_SIZE 4
+#define TABLE_SIZE (1 << 9)
 
 struct __attribute__((packed, aligned(8))) {
     qword_t read_access             : 1;
     qword_t write_access            : 1;
     qword_t supervisor_execute      : 1;
-    qword_t memory_type             : 3; // cache related
+    qword_t memory_type             : 3; // cache related (3:5)
     qword_t ignore_pat              : 1; // ignore page attribute
     qword_t                         : 1;
+    qword_t accessed                : 1;
     qword_t dirty                   : 1;
     qword_t user_execute            : 1;
     qword_t                         : 1;
@@ -38,6 +41,7 @@ struct __attribute__((packed, aligned(8))) {
     qword_t memory_type             : 3; // cache related
     qword_t ignore_pat              : 1; // ignore page attribute
     qword_t                         : 1;
+    qword_t accessed                : 1;
     qword_t dirty                   : 1;
     qword_t user_execute            : 1;
     qword_t                         : 1;
@@ -69,8 +73,8 @@ union {
 struct __attribute__((packed, aligned(4096))) {
     ept_entry_t pml4[TABLE_SIZE];
     ept_entry_t pdpt[TABLE_SIZE];
-    ept_entry_t pd[TABLE_SIZE];
-    ept_entry_t pt[TABLE_SIZE];
+    ept_entry_t pds[TABLE_SIZE * MEMORY_SIZE];
+    ept_entry_t pts[TABLE_SIZE * TABLE_SIZE * MEMORY_SIZE];
 } typedef extended_paging_tables_t;
 
 enum {
@@ -86,4 +90,5 @@ enum {
 } typedef ept_table_level_t;
 
 eptp_t initialize_extended_page_tables(extended_paging_tables_t *epts);
-void ept_map(extended_paging_tables_t *epts, qword_t guest_physical_address, qword_t physical_address, ept_flags_t access_rights);
+void set_entry_address(ept_entry_t *entry, qword_t address);
+void set_entry_flags(ept_entry_t *entry, ept_flags_t *flags);

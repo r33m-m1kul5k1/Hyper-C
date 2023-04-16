@@ -3,7 +3,7 @@
 #include "lib/log.h"
 #include "hardware/types.h"
 
-#define CPU_DATA_ADDRESS 0x50000
+#define CPU_DATA_ADDRESS 0x01000000
 #define REAL_MODE_BASE_ADDRESS 0x7E00
 #define DAP_ADDRESS 0x500
 #define DRIVE_NUMBER_ADDRESS 0x600

@@ -135,7 +135,7 @@ void configure_vmcs(cpu_data_t *cpu_data) {
 
     // primary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS, MSR_IA32_VMX_TRUE_PROCBASED_CTLS);
-    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits | CPU_BASED_HLT_EXITING | CPU_BASED_ACTIVATE_MSR_BITMAP);
+    vmwrite(VMCS_CPU_BASED_VM_EXEC_CONTROL, default_bits | CPU_BASED_HLT_EXITING | CPU_BASED_ACTIVATE_MSR_BITMAP | CPU_BASED_ACTIVATE_SECONDARY_CONTROLS);
     
     // secondary-processor based VM-execution control fields
     default_bits = get_default_bits(MSR_IA32_VMX_PROCBASED_CTLS2, MSR_IA32_VMX_PROCBASED_CTLS2); // for this control there is no true default bits
@@ -269,6 +269,10 @@ void vmexit_handler() {
             status = wrmsr_handler(guest_state);
             break;
 
+        case EXIT_REASON_EPT_VIOLATION:
+            status = ept_violation_handler(guest_state);
+            break;
+            
         default:
             PANIC("unsupported exit reason");
     }
