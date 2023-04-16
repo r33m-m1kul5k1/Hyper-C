@@ -1,5 +1,6 @@
 #include "vmm/ept.h"
 #include "lib/log.h"
+#include <stddef.h>
 
 #define EIGHT_BYTES 8
 #define NESTED_TABLES_COUNT 4
@@ -46,6 +47,12 @@ eptp_t initialize_extended_page_tables(extended_paging_tables_t *epts) {
     }
 
     return eptp;
+}
+
+void update_gpa_access_rights(extended_paging_tables_t *epts, qword_t gpa, ept_flags_t *flags) {
+    ASSERT(gpa % PAGE_SIZE == 0);
+    size_t gpa_page = gpa / PAGE_SIZE;
+    set_entry_flags(&epts->pts[gpa_page], flags);
 }
 
 void set_entry_address(ept_entry_t *entry, qword_t address) {

@@ -90,5 +90,6 @@ enum {
 } typedef ept_table_level_t;
 
 eptp_t initialize_extended_page_tables(extended_paging_tables_t *epts);
+void update_gpa_access_rights(extended_paging_tables_t *epts, qword_t gpa, ept_flags_t *flags);
 void set_entry_address(ept_entry_t *entry, qword_t address);
 void set_entry_flags(ept_entry_t *entry, ept_flags_t *flags);

@@ -32,6 +32,7 @@ struct __attribute__((packed, aligned(4096))) {
 struct {
     registers_t registers;
     byte_t stack_top[8 * PAGE_FRAME_SIZE];
+    byte_t secure_page[PAGE_FRAME_SIZE];
 } typedef guest_cpu_state_t;
 
 struct {

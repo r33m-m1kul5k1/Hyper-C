@@ -25,6 +25,7 @@
 #define GUEST_REGISTERS_STATE 0x7FF00
 #define EFER_MSR 0xC0000080
 
+
 /* VMCS related data */
 #define CANONICAL_ADDRESS 0xffffffff
 #define CANONICAL_SELECTOR 0xff
@@ -246,6 +247,14 @@ void configure_vmcs(cpu_data_t *cpu_data) {
     vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
     monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
     vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
+
+    ept_flags_t secure_page_flags = { 
+                                  .read_access = 1, 
+                                  .write_access = 1, 
+                                  .supervisor_execute = 1,
+                                  .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
+                                };
+    update_gpa_access_rights(&cpu_data->epts, (qword_t)&cpu_data->guest_cpu_state.secure_page, &secure_page_flags);
 }
 
 void vmexit_handler() {
@@ -272,7 +281,7 @@ void vmexit_handler() {
         case EXIT_REASON_EPT_VIOLATION:
             status = ept_violation_handler(guest_state);
             break;
-            
+
         default:
             PANIC("unsupported exit reason");
     }
