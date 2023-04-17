@@ -26,6 +26,7 @@
 #define EFER_MSR 0xC0000080
 
 
+
 /* VMCS related data */
 #define CANONICAL_ADDRESS 0xffffffff
 #define CANONICAL_SELECTOR 0xff
@@ -249,7 +250,6 @@ void configure_vmcs(cpu_data_t *cpu_data) {
     vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
 
     ept_flags_t secure_page_flags = { 
-                                  .read_access = 1, 
                                   .write_access = 1, 
                                   .supervisor_execute = 1,
                                   .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
@@ -282,6 +282,9 @@ void vmexit_handler() {
             status = ept_violation_handler(guest_state);
             break;
 
+        case EXIT_REASON_EPT_MISCONFIG:
+            status = ept_misconfig_handler(guest_state);
+            break;
         default:
             PANIC("unsupported exit reason");
     }
@@ -297,6 +300,8 @@ void vmentry_handler() {
     
     LOG_DEBUG("After handling rdmsr");
     asm volatile("hlt");
+
+    asm volatile("mov [0x1812000], %rax");
     while (1) {}
 }
 

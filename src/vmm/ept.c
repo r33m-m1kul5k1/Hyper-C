@@ -50,7 +50,7 @@ eptp_t initialize_extended_page_tables(extended_paging_tables_t *epts) {
 }
 
 void update_gpa_access_rights(extended_paging_tables_t *epts, qword_t gpa, ept_flags_t *flags) {
-    ASSERT(gpa % PAGE_SIZE == 0);
+    ASSERT((gpa % PAGE_SIZE == 0));
     size_t gpa_page = gpa / PAGE_SIZE;
     set_entry_flags(&epts->pts[gpa_page], flags);
 }
