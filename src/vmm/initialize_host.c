@@ -34,8 +34,8 @@ void initialize_host() {
     LOG_INFO("[guest stack]: %u", cpu_data->guest_cpu_state.stack_top);
     LOG_INFO("[guest secure]: %u", cpu_data->guest_cpu_state.secure_page);
     
-    // initialize_bios();
-    // load_mbr();
+    initialize_bios();
+    load_mbr();
     enter_vmx_root(cpu_data);
     configure_vmcs(cpu_data);
     launch_vm();

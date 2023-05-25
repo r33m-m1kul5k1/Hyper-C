@@ -147,7 +147,6 @@ protected_real_mode:
 
 real_mode:
     setup_data_segments 0x0
-    sti
     ret 2 
 ;------------------------------------------------------------------
 

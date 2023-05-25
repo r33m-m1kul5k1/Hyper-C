@@ -115,3 +115,19 @@ changed the vmm memory layout and the guest registers are changed some how.
 ideas:
 1. the memory is changed during a vmexit. - to check
 2. the memory address the too high, then when updating rip, it doesn't changes
+
+
+the bug:
+
+when calling an interrupt it jumps to a random location, not related to the stack.
+is the IVT corrupted?
+
+I have a code that works with interrupts 
+
+I need more information about the crash -> why?
+
+I can compare code from that version to mine.
+
+what is suspected?
+1. the jump from long to protected -> doesn't initialize tables
+2. the real mode ivt. -> it points the program to an empty location -> unmapped location ? 
