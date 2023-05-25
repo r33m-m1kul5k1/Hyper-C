@@ -4,6 +4,13 @@ a native hypervisor for [CrabOS](https://github.com/r33m-m1kul5k1/CrabOS) and Wi
 
 ## Build & Run
 
+make sure that your linux distribution has:
+
+* `mtools`
+* `nasm`
+* `gcc`
+* `qemu-system-x86_64`
+
 ```bash
 ./scripts/run.sh
 ```
