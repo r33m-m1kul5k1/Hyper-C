@@ -116,17 +116,17 @@ compatibility_mode:
     mov cr0, eax
 
     ; note that I stay with the same page tables
-    mov eax, PDP_ADDRESS
-    mov cr3, eax
+    ; mov eax, PDP_ADDRESS
+    ; mov cr3, eax
 
     mov ecx, EFER_MSR          
     rdmsr
     and eax, ~LONG_MODE               
     wrmsr
 
-    mov eax, cr0
-    or eax, PAGING
-    mov cr0, eax
+    ; mov eax, cr0
+    ; or eax, PAGING
+    ; mov cr0, eax
 
     ; Note: in section 9.8.5.4 step 6 intel instructs to make a branch instruction.
     ; I don't do it because it does not effects the current state of the segment registers
@@ -170,7 +170,7 @@ protected_real_mode:
 
 real_mode:
     setup_data_segments 0x0
-    sti
+    ; sti
     ret 2 
 ;------------------------------------------------------------------
 
