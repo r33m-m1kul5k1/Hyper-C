@@ -142,14 +142,14 @@ compatibility_mode:
 protected_to_real:
     
     cli
-    ; paging must be identity mapped
-    mov eax, cr0
-    and eax, ~(PAGING)
-    mov cr0, eax
+    ; ; paging must be identity mapped
+    ; mov eax, cr0
+    ; and eax, ~(PAGING)
+    ; mov cr0, eax
 
-    ; flush TLB
-    mov eax, 0x0
-    mov cr3, eax
+    ; ; flush TLB
+    ; mov eax, 0x0
+    ; mov cr3, eax
 
     jmp gdt.real_mode_code_segment:REAL_MODE_RELOCATION(protected_real_mode)
  
