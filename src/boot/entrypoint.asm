@@ -17,10 +17,10 @@ section .text
 
 [bits 32]
 _start:
-    mov esp, STACK_TOP
     call protected_to_long
 
 [bits 64]  
+    mov rsp, HIGHER_MEMORY_STACK_TOP
     call initialize_host
 
 after:

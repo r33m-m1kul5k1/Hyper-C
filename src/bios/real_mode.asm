@@ -6,7 +6,7 @@
 real_mode_callback:
     enter 0, 0
     ; the stack pointer must be accessable from real mode
-    mov rsp, STACK_TOP
+    mov rsp, LOWER_MEMORY_STACK_TOP
     
     sub rdi, real_mode_start
     add rdi, REAL_MODE_BASE_ADDRESS

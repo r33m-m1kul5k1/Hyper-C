@@ -131,3 +131,11 @@ I can compare code from that version to mine.
 what is suspected?
 1. the jump from long to protected -> doesn't initialize tables
 2. the real mode ivt. -> it points the program to an empty location -> unmapped location ? 
+
+When the lower stack has grown more than it should interrupts doesn't work properly, maybe it corrupted some important information for the bios.
+address 4000 should be used for stack during bootstrap.
+
+some say that the bios data area ends at:
+1. ffffe
+2. 40f0
+3. 
