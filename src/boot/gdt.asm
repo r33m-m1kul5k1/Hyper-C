@@ -28,7 +28,7 @@ REAL_MODE_CODE_SEGMENT: equ $ - gdt_start
 
     db 0x00           ; base 16-23
     db 0b10011010     ; P, DPL, S, E, DC, RW, A (access byte)
-    db 0b10000000     ; G, DB, L, Reserved (limit 19-16 & flags)
+    db 0b00000000     ; G, DB, L, Reserved (limit 19-16 & flags)
     db 0x00           ; base 24-31
 
 IA32E_DATA_SEGMENT: equ $ - gdt_start
@@ -55,7 +55,7 @@ REAL_MODE_DATA_SEGMENT: equ $ - gdt_start
 
     db 0x00           ; base 16-23
     db 0b10010010     ; P, DPL, S, E, DC, RW, A (access byte)
-    db 0b10000000     ; G, DB, L, Reserved (limit 19-16 & flags)
+    db 0b00000000     ; G, DB, L, Reserved (limit 19-16 & flags)
     db 0x00           ; base 24-31
 gdt_end:
 

@@ -83,7 +83,7 @@ protected_to_long_lower_memory:
 
 [bits 64]
 .long_mode:
-    setup_data_segments IA32E_CODE_SEGMENT
+    setup_data_segments IA32E_DATA_SEGMENT
 
     and rsi, 0xFFFFFFFF
     push rsi
