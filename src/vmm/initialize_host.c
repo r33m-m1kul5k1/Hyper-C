@@ -14,6 +14,7 @@ extern void real_mode_end();
 extern void real_mode_callback(void (*)());
 extern void read_disk();
 extern void real_mode_smile();
+extern void bios_mmap();
 
 void initialize_bios();
 void load_mbr();
@@ -23,22 +24,21 @@ void initialize_host() {
     set_log_level(DEBUG_LEVEL);
     LOG_INFO("initializing machine");
 
-    // cpu_data_t *cpu_data = (cpu_data_t *)CPU_DATA_ADDRESS;
-    // memset((void *)cpu_data, 0, sizeof(cpu_data_t));
-    // LOG_INFO("VMM memory layout:");
-    // LOG_INFO("[vmxon region]: %u", cpu_data->vmxon_region);
-    // LOG_INFO("[vmcs]: %u", cpu_data->vmcs);
-    // LOG_INFO("[extended paging tables]: %u", &cpu_data->epts);
-    // LOG_INFO("[msr bitmaps]: %u", cpu_data->msr_bitmaps);
-    // LOG_INFO("[guest registers]: %u", &cpu_data->guest_cpu_state.registers);
-    // LOG_INFO("[guest stack]: %u", cpu_data->guest_cpu_state.stack_top);
-    // LOG_INFO("[guest secure]: %u", cpu_data->guest_cpu_state.secure_page);
+    cpu_data_t *cpu_data = (cpu_data_t *)CPU_DATA_ADDRESS;
+    LOG_INFO("VMM memory size is %x and its layout is as follows:", sizeof(cpu_data_t));
+    LOG_INFO("[vmxon region]: %u", cpu_data->vmxon_region);
+    LOG_INFO("[vmcs]: %u", cpu_data->vmcs);
+    LOG_INFO("[extended paging tables]: %u", &cpu_data->epts);
+    LOG_INFO("[msr bitmaps]: %u", cpu_data->msr_bitmaps);
+    LOG_INFO("[guest registers]: %u", &cpu_data->guest_cpu_state.registers);
+    LOG_INFO("[guest stack]: %u", cpu_data->guest_cpu_state.stack_top);
+    LOG_INFO("[guest secure]: %u", cpu_data->guest_cpu_state.secure_page);
     
     initialize_bios();
     load_mbr();
-    // enter_vmx_root(cpu_data);
-    // configure_vmcs(cpu_data);
-    // launch_vm();
+    enter_vmx_root(cpu_data);
+    configure_vmcs(cpu_data);
+    launch_vm();
 }
 
 /*
