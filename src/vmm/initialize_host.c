@@ -13,7 +13,6 @@ extern void real_mode_start();
 extern void real_mode_end();
 extern void real_mode_callback(void (*)());
 extern void read_disk();
-extern void real_mode_smile();
 
 
 void initialize_bios();
@@ -60,7 +59,7 @@ void initialize_bios() {
     );
     
     // tests communication
-    real_mode_callback(real_mode_smile);
+    // real_mode_callback(real_mode_smile);
 }
 
 /*
