@@ -45,9 +45,6 @@ vm_instruction_error_t check_vm_instruction_error();
 dword_t get_default_bits(dword_t default_bits_msr, dword_t true_default_bits_msr);
 void vmexit_handler();
 
-
-extern void _vmexit_wrapper();
-
 const char *VM_INSTRUCTION_ERROR_STRINGS[] = {
     [UNDEFINE_VM_INSTRUCTION_ERROR] = "UNDEFINE_VM_INSTRUCTION_ERROR",
     [VMCALL_EXECUTED_IN_VMX_ROOT_OPERATION] = "VMCALL_EXECUTED_IN_VMX_ROOT_OPERATION",
@@ -77,6 +74,7 @@ const char *VM_INSTRUCTION_ERROR_STRINGS[] = {
     [INVALID_OPERAND_TO_INVEPT_OR_IVVPID] = "INVALID_OPERAND_TO_INVEPT_OR_IVVPID",
 };
 
+extern void __vmexit_wrapper();
 // SDM 24.4.2
 enum {
     CPU_STATE_ACTIVE,
@@ -156,7 +154,7 @@ void configure_vmcs(cpu_data_t *cpu_data) {
     vmwrite(VMCS_HOST_CR0, read_cr0());
     vmwrite(VMCS_HOST_CR4, read_cr4());
     vmwrite(VMCS_HOST_CR3, read_cr3());
-    vmwrite(VMCS_HOST_RIP, (qword_t)_vmexit_wrapper);
+    vmwrite(VMCS_HOST_RIP, (qword_t)__vmexit_wrapper);
     vmwrite(VMCS_HOST_RSP, STACK_TOP);
 
     vmwrite(VMCS_HOST_SYSENTER_CS, CANONICAL_SELECTOR);
@@ -247,17 +245,8 @@ void configure_vmcs(cpu_data_t *cpu_data) {
     vmwrite(VMCS_VMCS_LINK_POINTER, -1ULL);
 
     vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
-    monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
-    monitor_rdmsr(cpu_data->msr_bitmaps, MSR_IA32_SYSENTER_EIP);
-    
     vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
-
-    ept_flags_t secure_page_flags = { 
-                                  .write_access = 1, 
-                                  .supervisor_execute = 1,
-                                  .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
-                                };
-    update_gpa_access_rights(&cpu_data->epts, (qword_t)&cpu_data->guest_cpu_state.secure_page, &secure_page_flags);
+    monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
 }
 
 void vmexit_handler() {
@@ -288,6 +277,11 @@ void vmexit_handler() {
         case EXIT_REASON_EPT_MISCONFIG:
             status = ept_misconfig_handler(guest_state);
             break;
+        
+        case EXIT_REASON_VMCALL:
+            status = vmcall_handler(guest_state);
+            break;
+            
         default:
             PANIC("unsupported exit reason");
     }

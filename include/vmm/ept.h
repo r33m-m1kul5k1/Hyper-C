@@ -1,3 +1,4 @@
+#pragma once
 /* 
 SDM Intel :
 EPT Pointer - 24.6.11

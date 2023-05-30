@@ -25,6 +25,7 @@ void initialize_host() {
     LOG_INFO("initializing machine");
 
     cpu_data_t *cpu_data = (cpu_data_t *)CPU_DATA_ADDRESS;
+    cpu_data->guest_cpu_state.cpu_data = cpu_data; // what a lovely loop :)
     LOG_INFO("VMM memory size is %x and its layout is as follows:", sizeof(cpu_data_t));
     LOG_INFO("[vmxon region]: %u", cpu_data->vmxon_region);
     LOG_INFO("[vmcs]: %u", cpu_data->vmcs);

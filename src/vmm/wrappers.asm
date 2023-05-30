@@ -2,12 +2,13 @@
 %define VMCS_GUEST_RSP 0x0000681c
 %define VMCS_GUEST_RIP 0x0000681e
 
-global _vmexit_wrapper
+global __vmexit_wrapper
+global __vmcall
 extern vmexit_handler
 
     
 ; Saves the guest's registers, and enable the hv to modify this state 
-_vmexit_wrapper:
+__vmexit_wrapper:
     ; host's fs base points to the guest registers state
     mov [fs:0x00], rax
     mov [fs:0x08], rbx
@@ -62,4 +63,7 @@ _vmexit_wrapper:
     ; we cannot call a function here because it may change important registers such as rbp
     vmresume
     
-    
+
+__vmcall:
+    vmcall
+    ret

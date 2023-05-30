@@ -28,14 +28,16 @@ struct __attribute__((packed, aligned(4096))) {
 
 // Note: allocation for this struct should be 4KiB aligned
 // Moreover note that each item in the following struct is 4KiB aligned
+typedef struct cpu_data cpu_data_t;
 
 struct {
     registers_t registers;
     byte_t stack_top[8 * PAGE_FRAME_SIZE];
     byte_t secure_page[PAGE_FRAME_SIZE];
+    cpu_data_t *cpu_data;
 } typedef guest_cpu_state_t;
 
-struct {
+struct cpu_data {
     byte_t vmxon_region[PAGE_FRAME_SIZE];
     byte_t vmcs[PAGE_FRAME_SIZE];   
     extended_paging_tables_t epts;
