@@ -32,7 +32,7 @@ GRUB_DIR = $(OBJECT_DIR)/iso/boot
 SRC_DIR = src
 
 C_SRC_FILES = $(wildcard $(SRC_DIR)/*/*.c)
-ASM_SRC_FILES = $(wildcard $(SRC_DIR)/vmm/*.asm) $(wildcard $(SRC_DIR)/boot/entrypoint.asm)
+ASM_SRC_FILES = $(wildcard $(SRC_DIR)/guest/*.asm) $(wildcard $(SRC_DIR)/vmm/*.asm) $(wildcard $(SRC_DIR)/boot/entrypoint.asm)
 
 C_FILES = $(C_SRC_FILES:$(SRC_DIR)/%=%)
 ASM_FILES = $(ASM_SRC_FILES:$(SRC_DIR)/%=%)

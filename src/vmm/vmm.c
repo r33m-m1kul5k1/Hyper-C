@@ -10,6 +10,7 @@
 #include "hardware/msr.h"
 #include "lib/log.h"
 #include "lib/utils.h"
+#include "guest/kmain.h"
 
 /* VMX related data */
 #define CR4_VMX_ENABLE (1 << 13)
@@ -43,7 +44,7 @@
 vm_instruction_error_t check_vm_instruction_error();
 dword_t get_default_bits(dword_t default_bits_msr, dword_t true_default_bits_msr);
 void vmexit_handler();
-void vmentry_handler();
+
 
 extern void _vmexit_wrapper();
 
@@ -185,7 +186,7 @@ void configure_vmcs(cpu_data_t *cpu_data) {
     vmwrite(VMCS_GUEST_CR3, read_cr3());
     vmwrite(VMCS_GUEST_CR4, read_cr4());
     vmwrite(VMCS_GUEST_DR7, read_dr7());
-    vmwrite(VMCS_GUEST_RIP, (qword_t)vmentry_handler); 
+    vmwrite(VMCS_GUEST_RIP, (qword_t)kmain); 
     vmwrite(VMCS_GUEST_RSP, (qword_t)cpu_data->guest_cpu_state.stack_top);
     vmwrite(VMCS_GUEST_RFLAGS, (read_rflags() | RFLAGS_DEFAULT1) & RFLAGS_DEFAULT0);
 
@@ -247,6 +248,8 @@ void configure_vmcs(cpu_data_t *cpu_data) {
 
     vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
     monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
+    monitor_rdmsr(cpu_data->msr_bitmaps, MSR_IA32_SYSENTER_EIP);
+    
     vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
 
     ept_flags_t secure_page_flags = { 
@@ -292,17 +295,6 @@ void vmexit_handler() {
     if (status == HANDLER_FAILURE) {
         PANIC("Faild to handle VM-exit");
     }
-}
-
-void vmentry_handler() {
-    LOG_INFO("VM-entry occurred");
-    read_msr(EFER_MSR);
-    
-    LOG_DEBUG("After handling rdmsr");
-    asm volatile("hlt");
-
-    asm volatile("mov [0x1812000], %rax");
-    while (1) {}
 }
 
 void launch_vm() {
