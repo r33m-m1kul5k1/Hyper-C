@@ -46,6 +46,8 @@ void vmexit_handler();
 void vmentry_handler();
 
 extern void _vmexit_wrapper();
+extern void real_mode_callback(void (*)());
+extern void execute_mbr();
 
 const char *VM_INSTRUCTION_ERROR_STRINGS[] = {
     [UNDEFINE_VM_INSTRUCTION_ERROR] = "UNDEFINE_VM_INSTRUCTION_ERROR",
@@ -296,6 +298,8 @@ void vmexit_handler() {
 
 void vmentry_handler() {
     LOG_INFO("VM-entry occurred");
+    real_mode_callback(execute_mbr);
+    
     read_msr(EFER_MSR);
     
     LOG_DEBUG("After handling rdmsr");

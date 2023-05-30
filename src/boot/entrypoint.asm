@@ -5,7 +5,7 @@ global real_mode_end
 global real_mode_callback
 global read_disk
 global real_mode_smile
-global bios_mmap
+global execute_mbr
 
 extern initialize_host
 

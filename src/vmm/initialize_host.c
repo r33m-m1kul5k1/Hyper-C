@@ -3,7 +3,7 @@
 #include "lib/log.h"
 #include "hardware/types.h"
 
-#define CPU_DATA_ADDRESS 0x01000000
+#define CPU_DATA_ADDRESS 0x0100_0000
 #define REAL_MODE_BASE_ADDRESS 0x7E00
 #define DAP_ADDRESS 0x500
 #define DRIVE_NUMBER_ADDRESS 0x600
@@ -14,7 +14,7 @@ extern void real_mode_end();
 extern void real_mode_callback(void (*)());
 extern void read_disk();
 extern void real_mode_smile();
-extern void bios_mmap();
+
 
 void initialize_bios();
 void load_mbr();
