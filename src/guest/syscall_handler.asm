@@ -1,5 +1,5 @@
 extern sysenter_rsp
-extern syscall_handler
+extern dispatch_handler
 global __sysenter
 global __syscall
 global __syscall_handler
@@ -17,7 +17,7 @@ __syscall_handler:
     push rcx
     push r11
 
-    call syscall_handler
+    call dispatch_handler
 
     popf
     pop rcx

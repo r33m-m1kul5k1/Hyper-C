@@ -3,6 +3,7 @@
 #include "hardware/types.h"
 #include "hardware/error_codes.h"
 #include "vmm/ept.h"
+#include "guest/syscalls.h"
 
 #define PAGE_FRAME_SIZE 0x1000
 
@@ -34,6 +35,7 @@ struct {
     registers_t registers;
     byte_t stack_top[8 * PAGE_FRAME_SIZE];
     byte_t secure_page[PAGE_FRAME_SIZE];
+    ssdt_t ssdt;
     cpu_data_t *cpu_data;
 } typedef guest_cpu_state_t;
 
