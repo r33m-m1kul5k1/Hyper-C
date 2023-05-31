@@ -7,6 +7,8 @@
 #include "vmm/msr_bitmaps.h"
 #include "vmm/hooks.h"
 
+#define ALIGN_DOWN(address) ((address >> 12) << 12)
+
 handler_status_t halt_handler(guest_cpu_state_t *guest_state) {
     LOG_DEBUG("handling halt");
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
@@ -35,14 +37,25 @@ handler_status_t wrmsr_handler(guest_cpu_state_t *guest_state) {
 
 handler_status_t ept_violation_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
-    LOG_DEBUG("guest physical address %u", vmread(VMCS_GUEST_PHYSICAL_ADDRESS));
+    qword_t physical_address = vmread(VMCS_GUEST_PHYSICAL_ADDRESS);
+    LOG_DEBUG("guest physical address %u", physical_address);
+
+    
 
     return HANDLER_SUCCESS;
 }
 
 handler_status_t ept_misconfig_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
-    LOG_DEBUG("guest tried to access physical address at %u", vmread(VMCS_GUEST_PHYSICAL_ADDRESS));
+    qword_t physical_address = vmread(VMCS_GUEST_PHYSICAL_ADDRESS);
+    LOG_DEBUG("guest tried to access physical address at %u", physical_address);
+
+    if ((qword_t)&guest_state->ssdt  <= physical_address && physical_address < (qword_t)&guest_state->ssdt + 0x1000) {
+        LOG_DEBUG("the guest OS tried to read it's ssdt");
+        // finds the offset of the ssdt
+        guest_state->registers.rdi = (physical_address - ALIGN_DOWN(physical_address)) / sizeof(qword_t);
+        guest_state->registers.rax = (qword_t)ept_hook;
+    }
 
     return HANDLER_SUCCESS;
 }
@@ -50,15 +63,6 @@ handler_status_t ept_misconfig_handler(guest_cpu_state_t *guest_state) {
 handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
     switch (guest_state->registers.rdi) {
-        case PROTECET_SECURE_PAGE:
-            LOG_DEBUG("disabling read from the secure page");
-            ept_flags_t secure_page_flags = { 
-                                    .write_access = 1, 
-                                    .supervisor_execute = 1,
-                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
-                                    };
-            update_gpa_access_rights(&guest_state->cpu_data->epts, (qword_t)guest_state->secure_page, &secure_page_flags);
-            break;
 
         case PROTECET_SYSCALL:
             LOG_DEBUG("protecting IA32_SYSENTER_EIP and IA32_LSTAR msrs from writes");
@@ -70,6 +74,19 @@ handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
             LOG_DEBUG("hooking lstar msr");
             monitor_rdmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
             break;
+        
+        case VMM_ATTACK_SSDT: {
+            LOG_DEBUG("hooking read from the ssdt page");
+            ept_flags_t ssdt_page_flags = { 
+                                    .read_access = 0,
+                                    .write_access = 1, 
+                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
+                                    };
+            LOG_DEBUG("epts: %u", &guest_state->cpu_data->epts);
+            LOG_DEBUG("ssdt: %u", &guest_state->ssdt);
+            update_gpa_access_rights(&guest_state->cpu_data->epts, (qword_t)&guest_state->ssdt, &ssdt_page_flags);
+            break;
+        }
             
         default:
             LOG_ERROR("unsupported vmcall");

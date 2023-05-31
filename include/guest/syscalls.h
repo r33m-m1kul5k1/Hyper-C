@@ -1,6 +1,7 @@
 #pragma once
 
 #define SSDT_SIZE 512
+#define SSDT_ADDRESS 0x1812000
 
 typedef void (*syscall_handler_t)();
 

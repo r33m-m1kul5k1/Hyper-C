@@ -33,8 +33,7 @@ void initialize_host() {
     LOG_INFO("[msr bitmaps]: %u", cpu_data->msr_bitmaps);
     LOG_INFO("[guest registers]: %u", &cpu_data->guest_cpu_state.registers);
     LOG_INFO("[guest stack]: %u", cpu_data->guest_cpu_state.stack_top);
-    LOG_INFO("[guest secure]: %u", cpu_data->guest_cpu_state.secure_page);
-    LOG_INFO("[guest ssdt]: %u", cpu_data->guest_cpu_state.ssdt);
+    LOG_INFO("[guest ssdt]: %u", &cpu_data->guest_cpu_state.ssdt);
     
     // initialize_bios();
     // load_mbr();

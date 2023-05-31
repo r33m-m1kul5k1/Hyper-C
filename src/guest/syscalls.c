@@ -4,10 +4,9 @@
 #include "lib/utils.h"
 #include "guest/syscalls.h"
 
-
 #define STACK_SIZE 0x1000
 #define EFER_SYSCALL_ENABLE 0x1
-#define SSDT_ADDRESS 0x1813000
+
 
 // we need to save rsp before sysenter because sysenter trashes rdx and rcx
 // and this is because the jump is not between rings.
@@ -34,7 +33,7 @@ void init_syscalls() {
     write_msr(MSR_IA32_STAR, ((qword_t)read_cs() << 32));
     write_msr(MSR_IA32_EFER, read_msr(MSR_IA32_EFER) | EFER_SYSCALL_ENABLE);
 
-    memset((void *)SSDT_ADDRESS, 0, 0x1000);
+    // memset((void *)SSDT_ADDRESS, 0, 0x1000);
 
 }
 

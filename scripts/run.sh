@@ -5,6 +5,7 @@ SCRIPT_DIR=$(cd -- $(dirname ${BASH_SOURCE[0]}) &> /dev/null && pwd)
 PROJECT_DIR=$SCRIPT_DIR/..
 BUILD_DIR=$PROJECT_DIR/build
 
+make clean -C $PROJECT_DIR
 make -C $PROJECT_DIR
 
 qemu-system-x86_64 -cdrom $BUILD_DIR/hypervisor.iso \

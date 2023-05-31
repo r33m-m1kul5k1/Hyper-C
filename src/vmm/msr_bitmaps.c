@@ -18,7 +18,7 @@ void monitor_rdmsr(byte_t *msr_bitmaps, dword_t msr) {
 
     msr_index = (MIN_LOW_MSR <= msr && msr <= MAX_LOW_MSR) ? msr / 8  : (msr - 0xC0000000) / 8 + BITMAP_FOR_HIGH_MSRS;
     
-    LOG_DEBUG("msr byte: %x", msr_index);
+    // LOG_DEBUG("msr byte: %x", msr_index);
     msr_bitmaps[msr_index] |= 1 << (msr & 0b0111);
 }
 
@@ -33,6 +33,6 @@ void monitor_wrmsr(byte_t *msr_bitmaps, dword_t msr) {
             msr / 8 + BITMAP_FOR_WRMSR :
             (msr - 0xC0000000) / 8 + BITMAP_FOR_WRMSR + BITMAP_FOR_HIGH_MSRS;
     
-    LOG_DEBUG("msr byte: %x", msr_index);
+    // LOG_DEBUG("msr byte: %x", msr_index);
     msr_bitmaps[msr_index] |= 1 << (msr & 0b0111);
 }

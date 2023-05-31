@@ -8,9 +8,9 @@ enum {
 } typedef handler_status_t;
 
 enum {
-    PROTECET_SECURE_PAGE,
     PROTECET_SYSCALL,
     VMM_ATTACK_LSTAR,
+    VMM_ATTACK_SSDT,
 } typedef vmcall_types_t;
 
 handler_status_t halt_handler(guest_cpu_state_t *guest_state);

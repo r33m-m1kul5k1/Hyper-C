@@ -34,7 +34,6 @@ typedef struct cpu_data cpu_data_t;
 struct {
     registers_t registers;
     byte_t stack_top[8 * PAGE_FRAME_SIZE];
-    byte_t secure_page[PAGE_FRAME_SIZE];
     ssdt_t ssdt;
     cpu_data_t *cpu_data;
 } typedef guest_cpu_state_t;

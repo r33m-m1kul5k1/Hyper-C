@@ -17,11 +17,13 @@ void kmain() {
     LOG_INFO("Initializing OS");
 
     init_syscalls();
+    __vmcall(VMM_ATTACK_SSDT);
+    asm volatile("mov [0x1812000], %rax");
     set_syscall_handler(42, print_a_crab);
-    __vmcall(PROTECET_SECURE_PAGE);
-    inject_mallwares();
     __vmcall(PROTECET_SYSCALL);
-    
+    inject_mallwares();
+    __syscall(42);
+
     // after protecting LSATR from writes
     __vmcall(VMM_ATTACK_LSTAR);
     void (*syscall_handler)(unsigned int) = (void (*)(unsigned int))read_msr(MSR_IA32_LSTAR);
@@ -30,10 +32,8 @@ void kmain() {
     // privilege instruction
     asm volatile("hlt");
 
-    __syscall(42);
     __sysenter(42);
     
-    asm volatile("mov [0x1812000], %rax");
     exit();
 }
 
