@@ -246,7 +246,6 @@ void configure_vmcs(cpu_data_t *cpu_data) {
 
     vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
     vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
-    monitor_rdmsr(cpu_data->msr_bitmaps, EFER_MSR);
 }
 
 void vmexit_handler() {

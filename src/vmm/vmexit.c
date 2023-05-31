@@ -5,6 +5,7 @@
 #include "lib/log.h"
 #include "vmm/ept.h"
 #include "vmm/msr_bitmaps.h"
+#include "vmm/hooks.h"
 
 handler_status_t halt_handler(guest_cpu_state_t *guest_state) {
     LOG_DEBUG("handling halt");
@@ -15,6 +16,12 @@ handler_status_t halt_handler(guest_cpu_state_t *guest_state) {
 handler_status_t rdmsr_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
     LOG_DEBUG("handling rdmsr from msr: %u", guest_state->registers.rcx);
+
+    if (guest_state->registers.rcx == MSR_IA32_LSTAR) {
+        // return value is EDX:EAX, memory size is 4 GiB so the biggest address can fit in eax.
+        guest_state->registers.rax = (qword_t)lstar_hook;
+        guest_state->registers.rdx = 0x0;
+    }
 
     return HANDLER_SUCCESS;
 }
@@ -54,10 +61,16 @@ handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
             break;
 
         case PROTECET_SYSCALL:
-            LOG_DEBUG("protecting IA32_SYSENTER_EIP msr from writes");
+            LOG_DEBUG("protecting IA32_SYSENTER_EIP and IA32_LSTAR msrs from writes");
             monitor_wrmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_SYSENTER_EIP);
+            monitor_wrmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
             break;
 
+        case VMM_ATTACK_LSTAR:
+            LOG_DEBUG("hooking lstar msr");
+            monitor_rdmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
+            break;
+            
         default:
             LOG_ERROR("unsupported vmcall");
             return HANDLER_FAILURE;

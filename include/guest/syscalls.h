@@ -1,4 +1,7 @@
 #pragma once
 
 void init_syscalls();
-extern void __dispatch_syscall(unsigned int number);
+void syscall_handler(unsigned int number);
+void __sysenter_handler(unsigned int number);
+extern void __syscall(unsigned int number);
+extern void __sysenter(unsigned int number);
