@@ -38,10 +38,7 @@ handler_status_t wrmsr_handler(guest_cpu_state_t *guest_state) {
 handler_status_t ept_violation_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
     qword_t physical_address = vmread(VMCS_GUEST_PHYSICAL_ADDRESS);
-    LOG_DEBUG("guest physical address %u", physical_address);
-
-    
-
+    LOG_DEBUG("tried to update guest physical address %u", physical_address);
     return HANDLER_SUCCESS;
 }
 
@@ -75,11 +72,11 @@ handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
             monitor_rdmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
             break;
         
-        case VMM_ATTACK_SSDT: {
-            LOG_DEBUG("hooking read from the ssdt page");
+        case PROTECT_SSDT: {
+            LOG_DEBUG("protecting the ssdt page from writes");
             ept_flags_t ssdt_page_flags = { 
-                                    .read_access = 0,
-                                    .write_access = 1, 
+                                    .read_access = 1,
+                                    .write_access = 0, 
                                     .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
                                     };
             LOG_DEBUG("epts: %u", &guest_state->cpu_data->epts);
