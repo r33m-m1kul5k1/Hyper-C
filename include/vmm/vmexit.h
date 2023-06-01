@@ -9,8 +9,9 @@ enum {
 
 enum {
     PROTECET_SYSCALL,
-    VMM_ATTACK_LSTAR,
+    HOOK_LSTAR_READ,
     PROTECT_SSDT,
+    HOOK_SSDT_READ,
 } typedef vmcall_types_t;
 
 handler_status_t halt_handler(guest_cpu_state_t *guest_state);

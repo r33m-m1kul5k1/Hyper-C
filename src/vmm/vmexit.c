@@ -67,7 +67,7 @@ handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
             monitor_wrmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
             break;
 
-        case VMM_ATTACK_LSTAR:
+        case HOOK_LSTAR_READ:
             LOG_DEBUG("hooking lstar msr");
             monitor_rdmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
             break;
@@ -84,7 +84,17 @@ handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
             update_gpa_access_rights(&guest_state->cpu_data->epts, (qword_t)&guest_state->ssdt, &ssdt_page_flags);
             break;
         }
-            
+        
+        case HOOK_SSDT_READ: {
+            LOG_DEBUG("hooking the ssdt page");
+            ept_flags_t ssdt_page_flags = { 
+                                    .read_access = 0,
+                                    .write_access = 1, 
+                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
+                                    };
+            update_gpa_access_rights(&guest_state->cpu_data->epts, (qword_t)&guest_state->ssdt, &ssdt_page_flags);
+            break;
+        }
         default:
             LOG_ERROR("unsupported vmcall");
             return HANDLER_FAILURE;

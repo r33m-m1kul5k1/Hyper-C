@@ -21,12 +21,13 @@ void kmain() {
     __vmcall(PROTECET_SYSCALL);
     set_syscall_handler(42, print_a_crab);
     __vmcall(PROTECT_SSDT);
+    __vmcall(HOOK_SSDT_READ);
     asm volatile("mov %0, [0x1812000]" :: "r"(mallware));
     inject_mallwares();
     __syscall(42);
 
     // after protecting LSATR from writes
-    __vmcall(VMM_ATTACK_LSTAR);
+    __vmcall(HOOK_LSTAR_READ);
     void (*syscall_handler)(unsigned int) = (void (*)(unsigned int))read_msr(MSR_IA32_LSTAR);
     syscall_handler(42);
 
