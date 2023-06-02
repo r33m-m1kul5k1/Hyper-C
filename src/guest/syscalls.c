@@ -33,8 +33,6 @@ void init_syscalls() {
     write_msr(MSR_IA32_STAR, ((qword_t)read_cs() << 32));
     write_msr(MSR_IA32_EFER, read_msr(MSR_IA32_EFER) | EFER_SYSCALL_ENABLE);
 
-    memset((void *)SSDT_ADDRESS, 0, 0x1000);
-
 }
 
 void dispatch_handler(unsigned int number) {

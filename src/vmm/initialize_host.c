@@ -2,6 +2,7 @@
 #include "lib/utils.h"
 #include "lib/log.h"
 #include "hardware/types.h"
+#include "guest/kmain.h"
 
 #define CPU_DATA_ADDRESS 0x01000000
 #define REAL_MODE_BASE_ADDRESS 0x7E00
@@ -18,6 +19,7 @@ extern void bios_mmap();
 
 void initialize_bios();
 void load_mbr();
+void init_ssdt();
 
 
 void initialize_host() {
@@ -39,6 +41,7 @@ void initialize_host() {
     // load_mbr();
     enter_vmx_root(cpu_data);
     configure_vmcs(cpu_data);
+    init_ssdt(&cpu_data->guest_cpu_state.ssdt);
     launch_vm();
 }
 
@@ -86,4 +89,9 @@ void load_mbr() {
 
     LOG_INFO("mbr: %s", mbr);
     
+}
+
+void init_ssdt(ssdt_t *ssdt) {
+    memset((void *)ssdt, 0, 0x1000);
+    set_syscall_handler(42, print_a_crab);
 }

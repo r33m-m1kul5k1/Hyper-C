@@ -246,6 +246,13 @@ void configure_vmcs(cpu_data_t *cpu_data) {
 
     vmwrite(VMCS_MSR_BITMAP, (qword_t)cpu_data->msr_bitmaps);
     vmwrite(VMCS_EPT_POINTER, initialize_extended_page_tables(&cpu_data->epts).qword_value);
+    ept_flags_t ssdt_page_flags = { 
+                                    .read_access = 0,
+                                    .write_access = 1, 
+                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
+                                    };
+
+    update_gpa_access_rights(&cpu_data->epts, (qword_t)&cpu_data->guest_cpu_state.ssdt, &ssdt_page_flags);
 }
 
 void vmexit_handler() {

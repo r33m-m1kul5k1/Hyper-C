@@ -19,12 +19,6 @@ handler_status_t rdmsr_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
     LOG_DEBUG("handling rdmsr from msr: %u", guest_state->registers.rcx);
 
-    if (guest_state->registers.rcx == MSR_IA32_LSTAR) {
-        // return value is EDX:EAX, memory size is 4 GiB so the biggest address can fit in eax.
-        guest_state->registers.rax = (qword_t)lstar_hook;
-        guest_state->registers.rdx = 0x0;
-    }
-
     return HANDLER_SUCCESS;
 }
 
@@ -45,13 +39,16 @@ handler_status_t ept_violation_handler(guest_cpu_state_t *guest_state) {
 handler_status_t ept_misconfig_handler(guest_cpu_state_t *guest_state) {
     guest_state->registers.rip += vmread(VMCS_VM_EXIT_INSTRUCTION_LEN);
     qword_t physical_address = vmread(VMCS_GUEST_PHYSICAL_ADDRESS);
-    LOG_DEBUG("guest tried to access physical address at %u", physical_address);
-
+    
     if ((qword_t)&guest_state->ssdt  <= physical_address && physical_address < (qword_t)&guest_state->ssdt + 0x1000) {
-        LOG_DEBUG("the guest OS tried to read it's ssdt");
-        // finds the offset of the ssdt
+        // arg1 - the entry number
         guest_state->registers.rdi = (physical_address - ALIGN_DOWN(physical_address)) / sizeof(qword_t);
-        guest_state->registers.rax = (qword_t)ept_hook;
+        // arg2 - the syscall handler
+        guest_state->registers.rsi = *(qword_t *)physical_address;
+        // read result is kept in rax
+        guest_state->registers.rax = (qword_t)ssdt_hook;
+    } else {
+        LOG_DEBUG("guest tried to access physical address at %u", physical_address);
     }
 
     return HANDLER_SUCCESS;
@@ -66,35 +63,7 @@ handler_status_t vmcall_handler(guest_cpu_state_t *guest_state) {
             monitor_wrmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_SYSENTER_EIP);
             monitor_wrmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
             break;
-
-        case HOOK_LSTAR_READ:
-            LOG_DEBUG("hooking lstar msr");
-            monitor_rdmsr(guest_state->cpu_data->msr_bitmaps, MSR_IA32_LSTAR);
-            break;
         
-        case PROTECT_SSDT: {
-            LOG_DEBUG("protecting the ssdt page from writes");
-            ept_flags_t ssdt_page_flags = { 
-                                    .read_access = 1,
-                                    .write_access = 0, 
-                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
-                                    };
-            LOG_DEBUG("epts: %u", &guest_state->cpu_data->epts);
-            LOG_DEBUG("ssdt: %u", &guest_state->ssdt);
-            update_gpa_access_rights(&guest_state->cpu_data->epts, (qword_t)&guest_state->ssdt, &ssdt_page_flags);
-            break;
-        }
-        
-        case HOOK_SSDT_READ: {
-            LOG_DEBUG("hooking the ssdt page");
-            ept_flags_t ssdt_page_flags = { 
-                                    .read_access = 0,
-                                    .write_access = 1, 
-                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
-                                    };
-            update_gpa_access_rights(&guest_state->cpu_data->epts, (qword_t)&guest_state->ssdt, &ssdt_page_flags);
-            break;
-        }
         default:
             LOG_ERROR("unsupported vmcall");
             return HANDLER_FAILURE;
