@@ -39,8 +39,8 @@ void syscall_mallware(unsigned int number) {
 }
 
 void sysenter_mallware(unsigned int number) {
-    __sysenter_handler(number);
     LOG_INFO("MALLWARE infected sysenter :)");
+    __sysenter_handler(number);
 }
 
 void inject_mallwares() {
