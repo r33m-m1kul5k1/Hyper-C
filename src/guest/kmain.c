@@ -18,8 +18,8 @@ void kmain() {
     LOG_INFO("Initializing OS");
     init_syscalls();
 
-    __vmcall(PROTECET_SYSCALL);
-    inject_mallwares();
+    // __vmcall(PROTECET_SYSCALL);
+    // inject_mallwares();
 
     __syscall(42);
     __sysenter(42);

@@ -19,7 +19,8 @@ extern void bios_mmap();
 
 void initialize_bios();
 void load_mbr();
-void init_ssdt();
+void initialize_ssdt(ssdt_t *ssdt);
+void initialize_read_hook(extended_paging_tables_t *epts, ssdt_t *ssdt);
 
 
 void initialize_host() {
@@ -41,7 +42,8 @@ void initialize_host() {
     load_mbr();
     enter_vmx_root(cpu_data);
     configure_vmcs(cpu_data);
-    init_ssdt(&cpu_data->guest_cpu_state.ssdt);
+    initialize_ssdt(&cpu_data->guest_cpu_state.ssdt);
+    // initialize_read_hook(&cpu_data->epts, &cpu_data->guest_cpu_state.ssdt);
     launch_vm();
 }
 
@@ -91,7 +93,17 @@ void load_mbr() {
     
 }
 
-void init_ssdt(ssdt_t *ssdt) {
-    memset((void *)ssdt, 0, 0x1000);
+void initialize_ssdt(ssdt_t *ssdt) {
+    // memset((void *)ssdt, 0, 0x1000);
     set_syscall_handler(42, print_a_crab);
+}
+
+void initialize_read_hook(extended_paging_tables_t *epts, ssdt_t *ssdt) {
+    ept_flags_t ssdt_page_flags = { 
+                                    .read_access = 0,
+                                    .write_access = 1, 
+                                    .memory_type = EPT_MEMORY_TYPE_WRITEBACK,
+                                    };
+
+    update_gpa_access_rights(epts, (qword_t)ssdt, &ssdt_page_flags);
 }
